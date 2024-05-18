@@ -37,7 +37,7 @@
     "react-slick": "^0.29.0",
     "react-syntax-highlighter": "^15.5.0",
     "remark-gfm": "^3.0.1",
-    "sharp": "^0.32.1",
+    "sharp": "^0.32.6",
     "slick-carousel": "^1.8.1",
     "sss-module": "^1.0.4",
     "swagger-ui-react": "^5.11.3",
