@@ -9,6 +9,7 @@ const ko: typeof ja = {
     history_title1: 'NEM으로 부터 영감을 받은 블록체인',
     title_button1: 'Install wallet',
     title_button2: 'Start Development',
+    title_button3: 'Join Mailing List',
     history_body1: "2014년 NEM 블록체인이 출시된 후 코드명 'Catapult'로 성능 및 기능 향상과 함께 새로운 합의 알고리즘을 개발 하였습닌다. 2021년에 완성된 'Catapult'를 성공 적으로 구동시켜 'Symbol'의 메인넷이 런칭되었습니다.",
     history_body1_Button: "NEM이 무엇인가요?",
     functionary_section_title: "고급 기능",
@@ -48,6 +49,7 @@ const ko: typeof ja = {
     about_site_management_body: "Symbol Community Web은 커뮤니티 회원이 운영합니다. 사이트 뒤에서 팀을 만나보십시오.",
     quick_learn_symbol_link: "https://learn.ja.symbol-community.com/",
     core_development_concept_v3: "https://github.com/symbol/symbol/blob/dev/docs/index.md",
+    mailing_list_register_link: "https://symbol-mail-admins.ashyflower-eaabd5ae.japaneast.azurecontainerapps.io/subscribe",
   },
   about: {
     meta_page_title: 'About Us | Symbol Community',

@@ -8,6 +8,7 @@ const en: typeof ja = {
     title_message: 'Welcome to Symbol & NEM. Empowering the world with robust and easy-to-use Web3 infrastructure!',
     title_button1: 'Install wallet',
     title_button2: 'Start Development',
+    title_button3: 'Join Mailing List',
     history_title1: 'A public blockchain inspired by NEM',
     history_body1: "After the original NEM blockchain launch in 2014, redevelopment under the codename 'Catapult' began with the intention of improving performance, enhancing functionality, and the refining the consensus algorithm. In 2021, 'Symbol' was launched as a distinct blockchain using the completed 'Catapult' codebase. Several months after launch, a successful 'community hard fork' across both NEM and Symbol established a new path forward; this new direction includes an emphasis on engaged community, genuine decenteralization, and a vision of a novel protocol layer facilitating universal cross-chain collaboration that would eventually emerge from NEM and Symbol",
     history_body1_Button: "What is NEM?",
@@ -48,6 +49,7 @@ const en: typeof ja = {
     about_site_management_body: "Symbol Community Web is run by members of the community. Meet the team behind the site.",
     quick_learn_symbol_link: "https://learn.en.symbol-community.com/",
     core_development_concept_v3: "https://github.com/symbol/symbol/blob/dev/docs/index.md",
+    mailing_list_register_link: "https://symbol-mail-admins.ashyflower-eaabd5ae.japaneast.azurecontainerapps.io/subscribe",
   },
   about: {
     meta_page_title: 'About Us | Symbol Community',

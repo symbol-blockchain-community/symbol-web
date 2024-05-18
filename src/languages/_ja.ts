@@ -6,6 +6,7 @@ const ja = {
       title_message: 'Symbol/NEM へようこそ。導入が簡単で、いつでも、誰でも使える L1 チェーン',
       title_button1: 'ウォレットのインストール',
       title_button2: '開発を始める',
+      title_button3: 'メーリングリストに登録',
       history_title1: 'NEMに新たな思想を吹き込んだパブリックブロックチェーン',
       history_body1: '2014年に登場したNEMに対して、性能向上・機能強化・コンセンサスアルゴリズムの改良を目的として、「Catapult」というコードネームで開発が行われていました。これが完成し Catapult を搭載して2021年にリリースされたパブリックブロックチェーンが「Symbol」です。',
       history_body1_Button: 'NEM とは？',
@@ -46,6 +47,7 @@ const ja = {
       about_site_management_body: 'Symbol Community Web はコミュニティのメンバーによって運営されています。サイトを運営するチームを紹介します。',
       quick_learn_symbol_link: "https://learn.ja.symbol-community.com/",
       core_development_concept_v3: "https://github.com/symbol/symbol/blob/dev/docs/index.md",
+      mailing_list_register_link: "https://symbol-mail-admins.ashyflower-eaabd5ae.japaneast.azurecontainerapps.io/subscribe",
   },
   about: {
     meta_page_title: 'チームについて | シンボル コミュニティ',

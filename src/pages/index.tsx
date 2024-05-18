@@ -113,6 +113,12 @@ const Home: NextPage<Props> = ({ i18n, newsReleases, locale }) => {
                     <IoChevronForwardOutline />
                   </LinkButton>
                 </Grid>
+                <Grid item xs={12}>
+                  <LinkButton isNewTab fullWidth size='large' href={i18n.mailing_list_register_link}>
+                    {i18n.title_button3}
+                    <IoChevronForwardOutline />
+                  </LinkButton>
+                </Grid>
               </Grid>
             </div>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center', opacity: 0.4 }}>
