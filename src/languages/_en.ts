@@ -49,7 +49,7 @@ const en: typeof ja = {
     about_site_management_body: "Symbol Community Web is run by members of the community. Meet the team behind the site.",
     quick_learn_symbol_link: "https://learn.en.symbol-community.com/",
     core_development_concept_v3: "https://github.com/symbol/symbol/blob/dev/docs/index.md",
-    mailing_list_register_link: "https://symbol-mail-admins.ashyflower-eaabd5ae.japaneast.azurecontainerapps.io/subscribe",
+    mailing_list_register_link: "https://mail-list.symbol-community.com/subscribe",
   },
   about: {
     meta_page_title: 'About Us | Symbol Community',

@@ -49,7 +49,7 @@ const zhHantTw: typeof ja = {
     about_site_management_body: "Symbol社區網站由社區成員運營。認識網站背後的團隊。",
     quick_learn_symbol_link: "https://learn.ja.symbol-community.com/",
     core_development_concept_v3: "https://github.com/symbol/symbol/blob/dev/docs/index.md",
-    mailing_list_register_link: "https://symbol-mail-admins.ashyflower-eaabd5ae.japaneast.azurecontainerapps.io/subscribe",
+    mailing_list_register_link: "https://mail-list.symbol-community.com/subscribe",
   },
   about: {
     meta_page_title: '啟發於 NEM 的公共區塊鏈 | Symbol Community',

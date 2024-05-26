@@ -49,7 +49,7 @@ const zh: typeof ja = {
     about_site_management_body: "Symbol社区网站由社区成员运营。认识网站背后的团队。",
     quick_learn_symbol_link: "https://learn.ja.symbol-community.com/",
     core_development_concept_v3: "https://github.com/symbol/symbol/blob/dev/docs/index.md",
-    mailing_list_register_link: "https://symbol-mail-admins.ashyflower-eaabd5ae.japaneast.azurecontainerapps.io/subscribe",
+    mailing_list_register_link: "https://mail-list.symbol-community.com/subscribe",
   },
   about: {
     meta_page_title: 'About Us | Symbol Community',

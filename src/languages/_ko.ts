@@ -49,7 +49,7 @@ const ko: typeof ja = {
     about_site_management_body: "Symbol Community Web은 커뮤니티 회원이 운영합니다. 사이트 뒤에서 팀을 만나보십시오.",
     quick_learn_symbol_link: "https://learn.ja.symbol-community.com/",
     core_development_concept_v3: "https://github.com/symbol/symbol/blob/dev/docs/index.md",
-    mailing_list_register_link: "https://symbol-mail-admins.ashyflower-eaabd5ae.japaneast.azurecontainerapps.io/subscribe",
+    mailing_list_register_link: "https://mail-list.symbol-community.com/subscribe",
   },
   about: {
     meta_page_title: 'About Us | Symbol Community',
