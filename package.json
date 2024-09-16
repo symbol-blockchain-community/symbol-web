@@ -40,7 +40,7 @@
     "sharp": "^0.32.6",
     "slick-carousel": "^1.8.1",
     "sss-module": "^1.0.4",
-    "swagger-ui-react": "^5.11.3",
+    "swagger-ui-react": "^5.17.14",
     "symbol-qr-library": "^0.14.2",
     "symbol-sdk": "^2.0.5",
     "typescript": "^5.3.3"
