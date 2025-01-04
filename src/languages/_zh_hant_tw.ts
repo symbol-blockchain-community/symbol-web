@@ -9,7 +9,6 @@ const zhHantTw: typeof ja = {
     history_title1: '啟發於 NEM 的公共區塊鏈',
     title_button1: 'Install wallet',
     title_button2: 'Start Development',
-    title_button3: 'Join Mailing List',
     history_body1: "於 2014 年推出最初的 NEM 區塊鏈後，代號 “Catapult” 重新開發，目的是提高性能、增強功能、完善共識算法。在2021 年，“Symbol” 使用完整的 “Catapult” 代碼庫作為一個獨特的區塊鏈啟動。而發布幾個月後，跨越 NEM 和 Symbol 的 “社區硬分叉” 成功地開闢了一條新的道路； 這個新方向包括強調參與社區、真正的去中心化，以及促進最終從 NEM 和 Symbol 出現的通用跨鏈協作的新型協議層願景",
     history_body1_Button: "什麼是NEM?",
     functionary_section_title: "高級功能",
@@ -49,7 +48,6 @@ const zhHantTw: typeof ja = {
     about_site_management_body: "Symbol社區網站由社區成員運營。認識網站背後的團隊。",
     quick_learn_symbol_link: "https://learn.ja.symbol-community.com/",
     core_development_concept_v3: "https://github.com/symbol/symbol/blob/dev/docs/index.md",
-    mailing_list_register_link: "https://mail-list.symbol-community.com/subscribe",
   },
   about: {
     meta_page_title: '啟發於 NEM 的公共區塊鏈 | Symbol Community',

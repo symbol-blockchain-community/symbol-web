@@ -1,8 +1,8 @@
-import ja from '@/languages/_ja';
 import en from '@/languages/_en';
+import ja from '@/languages/_ja';
 import ko from '@/languages/_ko';
-import zhHantTw from '@/languages/_zh_hant_tw';
 import zh from '@/languages/_zh';
+import zhHantTw from '@/languages/_zh_hant_tw';
 
 export type lang = typeof ja;
 
