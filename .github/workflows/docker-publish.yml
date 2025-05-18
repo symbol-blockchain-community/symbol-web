@@ -22,6 +22,11 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ghcr.io/${{ github.repository }}:latest
 
+  dependabot:
+    needs: build
+    if: github.event_name == 'pull_request' && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
       - name: Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v1
