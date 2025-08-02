@@ -168,7 +168,11 @@ const Community: NextPage<Props> = ({ i18n, communityReleases, spaces, locale })
                   description={item.attributes.description}
                   date={item.attributes.publishedAt}
                   locale={locale}
-                  image={`${process.env.NEXT_PUBLIC_API_URL}${item.attributes.headerImage?.data.attributes.url}`}
+                  image={
+                    item.attributes.headerImage?.data?.attributes?.url
+                      ? `${process.env.NEXT_PUBLIC_API_URL}${item.attributes.headerImage.data.attributes.url}`
+                      : undefined
+                  }
                   tweetLink={`${process.env.NEXT_PUBLIC_HOSTING_URL}${NAVIGATIONS.COMMUNITY}/${item.id}`}
                   link={`${NAVIGATIONS.COMMUNITY}/${item.id}`}
                   style={{ height: '100%' }}
