@@ -37,7 +37,7 @@ export default function MediaCard(props: Args): JSX.Element {
         component={'img'}
         height='200'
         alt='symbol シンボル nem card content image'
-        image={props.image ?? `${DEFAULT_CAVER_IMAGE}`}
+        image={props.image ?? `${(DEFAULT_CAVER_IMAGE as any).src}`}
       />
       <CardContent>
         <Typography gutterBottom variant='h5' component='div'>

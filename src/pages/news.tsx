@@ -96,7 +96,11 @@ const News: NextPage<Props> = ({ i18n, newsReleases, locale }) => {
                 description={item.attributes.description}
                 date={item.attributes.publishedAt}
                 locale={locale}
-                image={`${process.env.NEXT_PUBLIC_API_URL}${item.attributes.headerImage?.data.attributes.url}`}
+                image={
+                  item.attributes.headerImage?.data?.attributes?.url
+                    ? `${process.env.NEXT_PUBLIC_API_URL}${item.attributes.headerImage.data.attributes.url}`
+                    : undefined
+                }
                 tweetLink={`${process.env.NEXT_PUBLIC_HOSTING_URL}${NAVIGATIONS.NEWS}/${item.id}`}
                 link={`${NAVIGATIONS.NEWS}/${item.id}`}
                 style={{ height: '100%' }}
