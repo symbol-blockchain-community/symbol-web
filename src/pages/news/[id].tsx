@@ -38,8 +38,9 @@ const NewsArticle: NextPage<Props> = ({ i18n, article, articleIdByLanguage, loca
         <meta
           name='twitter:image'
           content={
-            `${process.env.NEXT_PUBLIC_API_URL}${article.attributes.headerImage?.data.attributes.url}` ||
-            '/twitter-card.png'
+            article.attributes.headerImage?.data?.attributes?.url
+              ? `${process.env.NEXT_PUBLIC_API_URL}${article.attributes.headerImage.data.attributes.url}`
+              : '/twitter-card.png'
           }
         />
       </Head>
