@@ -218,10 +218,6 @@ function localeIndexPath(locale: Locale, depth: number): string {
   return locale === 'en' ? `${root}index.html` : `${root}${locale}/index.html`;
 }
 
-function sectionPath(locale: Locale, isHome: boolean, depth: number, sectionId: string): string {
-  return isHome ? `#${sectionId}` : `${localeIndexPath(locale, depth)}#${sectionId}`;
-}
-
 function formatDate(dateString: string, locale: Locale): string {
   if (!dateString) return '';
   const date = new Date(dateString);
@@ -510,40 +506,18 @@ function renderLanguageMenu(currentLocale: Locale, depth: number): string {
   }).join('');
 }
 
-function renderHeader(locale: Locale, i18n: I18n, depth: number, isHomePage: boolean): string {
-  const ui = UI_TEXT[locale];
+function renderHeader(locale: Locale, i18n: I18n, depth: number): string {
   const root = getRootPath(depth);
-
-  const navItems = [
-    { id: 'features', label: text(i18n, 'functionary_section_title', 'Features') },
-    { id: 'news', label: text(i18n, 'news_title', 'News') },
-    { id: 'community', label: text(i18n, 'community_title', 'Community') },
-    { id: 'docs', label: text(i18n, 'docs_title', 'Docs') },
-    { id: 'start', label: text(i18n, 'start_title', ui.startNow) },
-  ];
-
-  const navLinks = navItems
-    .map((item) => `<a class="nav-link" href="${sectionPath(locale, isHomePage, depth, item.id)}">${escapeHtml(item.label)}</a>`)
-    .join('');
-
-  const mobileLinks = navItems
-    .map((item) => `<a href="${sectionPath(locale, isHomePage, depth, item.id)}">${escapeHtml(item.label)}</a>`)
-    .join('');
 
   return `<header class="site-header">
   <div class="container site-header-inner">
     <a class="brand" href="${localeIndexPath(locale, depth)}">
-      <img src="${root}assets/symbol-logo.webp" alt="Symbol" />
+      <img src="${root}assets/symbol-logo-dark.webp" alt="Symbol" />
     </a>
-    <nav class="main-nav" aria-label="Main">${navLinks}</nav>
     <div class="header-actions">
       <details class="lang-switch">
         <summary class="lang-summary">${escapeHtml(text(i18n, 'language', 'Language'))}</summary>
         <div class="lang-menu">${renderLanguageMenu(locale, depth)}</div>
-      </details>
-      <details class="mobile-drawer">
-        <summary class="menu-toggle">${ui.menu}</summary>
-        <nav class="mobile-nav" aria-label="Mobile">${mobileLinks}</nav>
       </details>
     </div>
   </div>
@@ -725,7 +699,7 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
   <link href="${root}css/output.css" rel="stylesheet" />
 </head>
 <body>
-  ${renderHeader(locale, i18n, depth, true)}
+  ${renderHeader(locale, i18n, depth)}
   <main>
     <section class="hero">
       <div class="container hero-shell">
@@ -859,7 +833,7 @@ function renderCategoryPage(locale: Locale, i18n: I18n, category: Category, arti
   <link href="${root}css/output.css" rel="stylesheet" />
 </head>
 <body>
-  ${renderHeader(locale, i18n, depth, false)}
+  ${renderHeader(locale, i18n, depth)}
   <main class="page-main">
     <section class="page-hero">
       <div class="container">
@@ -905,7 +879,7 @@ function renderArticlePage(locale: Locale, i18n: I18n, category: Category, artic
   <link href="${root}css/output.css" rel="stylesheet" />
 </head>
 <body>
-  ${renderHeader(locale, i18n, depth, false)}
+  ${renderHeader(locale, i18n, depth)}
   <main class="article-shell">
     <div class="container article-layout">
       <a class="back-link" href="${root}${category}/index.html">← ${ui.back}</a>
