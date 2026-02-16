@@ -1,0 +1,30 @@
+{
+  "name": "symbol-web-static",
+  "version": "2.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "build:css": "npx tailwindcss -i ./src/input.css -o ./css/output.css --minify",
+    "build:site": "npx ts-node scripts/build-site.ts",
+    "build": "npm run build:css && npm run build:site",
+    "check:links": "npx ts-node scripts/check-links.ts",
+    "test": "npm run build && npm run check:links",
+    "new:article": "npx ts-node scripts/new-article.ts",
+    "crawl:strapi": "npx ts-node scripts/crawl-strapi.ts",
+    "migrate:json": "npx ts-node scripts/migrate-json-to-md.ts",
+    "preview": "npx serve dist"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "@types/node": "^25.2.3",
+    "@types/sanitize-html": "^2.16.0",
+    "axios": "^1.13.5",
+    "gray-matter": "^4.0.3",
+    "marked": "^17.0.2",
+    "sanitize-html": "^2.17.0",
+    "serve": "^14.2.5",
+    "tailwindcss": "^4.1.18",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

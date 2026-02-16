@@ -1,0 +1,194 @@
+[
+  {
+    "id": 144,
+    "title": "Bug Report",
+    "body": "Reporting a vulnerability or bug in symbols",
+    "url": "https://github.com/symbol/symbol/blob/dev/client/catapult/CONTRIBUTING.md#bug-reports",
+    "category": "blog",
+    "platform": "web"
+  },
+  {
+    "id": 140,
+    "title": "NEM Symbol Forum (β)",
+    "body": "This is a NEM/Symbol web forum. Everything from casual conversations to discussions.",
+    "url": "https://kasanetalk.net/",
+    "category": "blog",
+    "platform": "web"
+  },
+  {
+    "id": 135,
+    "title": "Symbol Payment Map (an English-language site listing venues that accept 'Symbol Payment')",
+    "body": "이 사이트는 XYM(일명 “Symbol Payments”)로 결제 가능한 장소를 안내합니다.",
+    "url": "https://lab-radiointerference-symbol.my.canva.site/symbol-payment-map",
+    "category": "blog",
+    "platform": "web"
+  },
+  {
+    "id": 130,
+    "title": "Symbol & NEM Community Global",
+    "body": "English Information from the Symbol/NEM community",
+    "url": "https://twitter.com/symbol_nem_com",
+    "category": "sns",
+    "platform": "twitter"
+  },
+  {
+    "id": 125,
+    "title": "Symbol Brand Assets",
+    "body": "Symbol Brand Assets",
+    "url": "https://drive.google.com/drive/u/0/folders/1n5qDQMzL63Kj0THQjcih4Jw-j96tdjd2",
+    "category": "blog",
+    "platform": "web"
+  },
+  {
+    "id": 120,
+    "title": "심볼 블록체인 개발 링크",
+    "body": "심볼 블록체인의 개발에 관한 정보에 대한 링크입니다.",
+    "url": "https://qiita.com/nem_takanobu/items/4f50e5740318d92d7dcb",
+    "category": "blog",
+    "platform": "web"
+  },
+  {
+    "id": 115,
+    "title": "catnotes",
+    "body": "NEM 과 Symbol 블록체인 프로젝트의 핵심 개발자 중 한 명인 Jaguar 의 블로그입니다.",
+    "url": "https://catnotes.xyz/recent",
+    "category": "blog",
+    "platform": "web"
+  },
+  {
+    "id": 110,
+    "title": "XYM STAND",
+    "body": "Symbol의 사회 구현을 중심으로 지견을 정리하고 있습니다. 주말 기업을 언젠가 달성하기 위해 매진 중입니다.",
+    "url": "https://xym-symbol.site/",
+    "category": "blog",
+    "platform": "web"
+  },
+  {
+    "id": 105,
+    "title": "NEMTUS(NEM+)",
+    "body": "NEMTUS 의 공식 계정입니다.",
+    "url": "https://twitter.com/NemtusOfficial",
+    "category": "sns",
+    "platform": "twitter"
+  },
+  {
+    "id": 100,
+    "title": "NEMTUS(NEM+)",
+    "body": "NEMTUS(NEM+)는 넴/심볼 기술의 보급과 개발을 촉진하는 비영리 단체입니다.",
+    "url": "https://nemtus.com",
+    "category": "blog",
+    "platform": "web"
+  },
+  {
+    "id": 94,
+    "title": "Tanuson Slack",
+    "body": "We have a group of craftsmen who know how to build a node, maintain it, and other infrastructure upkeep. If you want to set up a node, join us.",
+    "url": "https://tanuson.slack.com",
+    "category": "chat",
+    "platform": "slack"
+  },
+  {
+    "id": 90,
+    "title": "LINE Symbol×NEM Open Chat",
+    "body": "초보자라도 질문하기 쉽고, 부담없이 참가할 수 있는 오픈 채팅.",
+    "url": "https://line.me/ti/g2/ay3ZKo6jJomHv4xpm1PFNaceMsR5Mh_pAorMMQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default",
+    "category": "chat",
+    "platform": "web"
+  },
+  {
+    "id": 52,
+    "title": "Everyday Symbol（A list of venues that accept 'symbol payment'）",
+    "body": "이 사이트는 XYM(일명 “Symbol Payments”)로 결제 가능한 장소를 안내합니다.",
+    "url": "https://lab-radiointerference-symbol.my.canva.site/everyday-symbol",
+    "category": "blog",
+    "platform": "web"
+  },
+  {
+    "id": 48,
+    "title": "Symbol Japan Forum（archive）",
+    "body": "이것은 Symbol & NEM 마케팅 부서의 이전 아카이브입니다. 현재 정보를 보관하는 장소로 사용 중",
+    "url": "https://github.com/ymuichiro/symbol_japan_forum",
+    "category": "blog",
+    "platform": "github"
+  },
+  {
+    "id": 42,
+    "title": "Symbol Blog",
+    "body": "Symbol 관련 뉴스 및 주제",
+    "url": "https://symbolblog.com/",
+    "category": "blog",
+    "platform": "web"
+  },
+  {
+    "id": 40,
+    "title": "Symbol & NEM Community Info",
+    "body": "일본 Symbol & NEM 커뮤니티의 정보",
+    "url": "https://twitter.com/symnem_com_info",
+    "category": "sns",
+    "platform": "twitter"
+  },
+  {
+    "id": 38,
+    "title": "Fushichou Foundation",
+    "body": "Symbol & NEM의 생태계를 성장시키기 위한 활동을 하는 재단입니다.",
+    "url": "https://twitter.com/TheFushichou",
+    "category": "sns",
+    "platform": "twitter"
+  },
+  {
+    "id": 36,
+    "title": "Lingua Franca",
+    "body": "Symbol & NEM 관련 자금 조달을 관리하는 팀입니다.",
+    "url": "https://twitter.com/aBermudaCompany",
+    "category": "sns",
+    "platform": "twitter"
+  },
+  {
+    "id": 34,
+    "title": "The Symbol Syndicate",
+    "body": "Symbol 핵심 개발자 팀으로, 해당 트윗을 팔로우해 소식을 전달 받을 수 있습니다.",
+    "url": "https://twitter.com/SymbolSyndicate",
+    "category": "sns",
+    "platform": "twitter"
+  },
+  {
+    "id": 32,
+    "title": "NEM",
+    "body": "NEM의 공식 계정",
+    "url": "https://twitter.com/nemofficial",
+    "category": "sns",
+    "platform": "twitter"
+  },
+  {
+    "id": 30,
+    "title": "Symbol",
+    "body": "Symbol의 공식 계정",
+    "url": "https://twitter.com/thesymbolchain",
+    "category": "sns",
+    "platform": "twitter"
+  },
+  {
+    "id": 26,
+    "title": "Symbol/NEM Marketing",
+    "body": "Symbol & NEM을 구체적으로 활용하여 사회에 소개하고 싶은 사람들을 위한 대화방입니다.",
+    "url": "https://discord.gg/TT2tvxFfN4",
+    "category": "chat",
+    "platform": "discord"
+  },
+  {
+    "id": 22,
+    "title": "nem Japan User Group",
+    "body": "일본의 Symbol & NEM 개발자들은 Symbol & NEM 개발에 어려움이 있을 때 함께 모여 질문합니다.",
+    "url": "https://discord.gg/5CKEnxsJkX",
+    "category": "chat",
+    "platform": "discord"
+  },
+  {
+    "id": 20,
+    "title": "NEM & Symbol",
+    "body": "NEM & Symbol 기여자들이 매일 토론하고 발표하는 장소",
+    "url": "https://discord.gg/NMA9YQ55td",
+    "category": "chat",
+    "platform": "discord"
+  }
+]
