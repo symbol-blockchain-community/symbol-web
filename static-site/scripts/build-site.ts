@@ -657,8 +657,8 @@ function renderFooter(locale: Locale, i18n: I18n, depth: number): string {
     <div>
       <h4>${ui.community}</h4>
       <ul>
-        <li><a href="https://discord.gg/JTxYPVTf" target="_blank" rel="noopener">Discord</a></li>
-        <li><a href="https://twitter.com/nemsymbol" target="_blank" rel="noopener">X / Twitter</a></li>
+        <li><a href="https://discord.com/invite/NMA9YQ55td" target="_blank" rel="noopener">Discord</a></li>
+        <li><a href="https://x.com/thesymbolchain" target="_blank" rel="noopener">X / Twitter</a></li>
       </ul>
     </div>
   </div>
