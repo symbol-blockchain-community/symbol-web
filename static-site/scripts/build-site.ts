@@ -1,7 +1,7 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import matter from 'gray-matter';
 import { marked } from 'marked';
+import * as path from 'path';
 import sanitizeHtml from 'sanitize-html';
 
 const ROOT_DIR = path.join(__dirname, '..');
@@ -9,7 +9,11 @@ const CONTENT_DIR = path.join(ROOT_DIR, 'content');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 const CSS_SOURCE = path.join(ROOT_DIR, 'css', 'output.css');
 const ASSETS_SOURCE = path.join(ROOT_DIR, 'assets');
+const PUBLIC_SOURCE = path.join(ROOT_DIR, 'public');
 const IMAGES_SOURCE = path.join(CONTENT_DIR, 'images');
+const SITE_URL = (process.env.SITE_URL || process.env.NEXT_PUBLIC_HOSTING_URL || 'https://symbol-community.com').replace(/\/+$/, '');
+const TWITTER_SITE = process.env.TWITTER_SITE || '@faunsu19000';
+const THEME_COLOR = '#b32af9';
 
 const LOCALES = ['en', 'ja', 'ko', 'zh', 'zh-hant-tw'] as const;
 const CATEGORIES = ['news', 'community', 'docs'] as const;
@@ -95,6 +99,15 @@ interface UiText {
   learnMore: string;
   openDocs: string;
   editOnGitHub: string;
+}
+
+interface MetaOptions {
+  depth: number;
+  title: string;
+  description: string;
+  pagePath: string;
+  type?: 'website' | 'article';
+  imagePath?: string;
 }
 
 const UI_TEXT: Record<Locale, UiText> = {
@@ -246,6 +259,56 @@ function shortText(content: string, max: number = 140): string {
 function getRootPath(depth: number): string {
   if (depth <= 0) return './';
   return '../'.repeat(depth);
+}
+
+function toSiteUrl(pathFromRoot: string): string {
+  const normalized = pathFromRoot.replace(/^\/+/, '');
+  if (!normalized) return `${SITE_URL}/`;
+  return `${SITE_URL}/${normalized}`;
+}
+
+function toAbsoluteAssetUrl(assetPath: string, depth: number): string {
+  if (/^https?:\/\//i.test(assetPath)) return assetPath;
+
+  const root = getRootPath(depth);
+  let normalized = assetPath.trim();
+
+  if (normalized.startsWith(root)) {
+    normalized = normalized.slice(root.length);
+  } else if (normalized.startsWith('./')) {
+    normalized = normalized.slice(2);
+  }
+
+  normalized = normalized.replace(/^\/+/, '');
+  return toSiteUrl(normalized);
+}
+
+function renderMetaTags(options: MetaOptions): string {
+  const type = options.type || 'website';
+  const absolutePageUrl = toSiteUrl(options.pagePath);
+  const relativeFallbackImage = `${getRootPath(options.depth)}twitter-card.png`;
+  const relativeImage = options.imagePath || relativeFallbackImage;
+  const absoluteImage = toAbsoluteAssetUrl(relativeImage, options.depth);
+
+  return `<meta name="description" content="${escapeHtml(options.description)}" />
+  <meta property="og:type" content="${type}" />
+  <meta property="og:title" content="${escapeHtml(options.title)}" />
+  <meta property="og:description" content="${escapeHtml(options.description)}" />
+  <meta property="og:url" content="${escapeHtml(absolutePageUrl)}" />
+  <meta property="og:image" content="${escapeHtml(absoluteImage)}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="${escapeHtml(TWITTER_SITE)}" />
+  <meta name="twitter:title" content="${escapeHtml(options.title)}" />
+  <meta name="twitter:description" content="${escapeHtml(options.description)}" />
+  <meta name="twitter:image" content="${escapeHtml(absoluteImage)}" />`;
+}
+
+function renderPwaHeadTags(depth: number): string {
+  const root = getRootPath(depth);
+  return `<meta name="theme-color" content="${THEME_COLOR}" />
+  <link rel="apple-touch-icon" href="${root}maskable_icon_x192.png" />
+  <link rel="manifest" href="${root}manifest.webmanifest" />
+  <link rel="shortcut icon" href="${root}favicon.ico" />`;
 }
 
 function renderLegacySwCleanupScript(depth: number): string {
@@ -623,6 +686,8 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
   const root = getRootPath(locale === 'en' ? 0 : 1);
   const depth = locale === 'en' ? 0 : 1;
   const docsTitle = text(i18n, 'docs_title', 'Docs');
+  const pageTitle = text(i18n, 'meta_page_title', 'Symbol Community');
+  const pagePath = locale === 'en' ? '' : `${locale}/`;
 
   const featureCards = [
     {
@@ -742,10 +807,15 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(text(i18n, 'meta_page_title', 'Symbol Community'))}</title>
-  <meta name="description" content="${escapeHtml(heroDescription)}" />
-  <meta property="og:title" content="${escapeHtml(text(i18n, 'meta_page_title', 'Symbol Community'))}" />
-  <meta property="og:description" content="${escapeHtml(heroDescription)}" />
+  <title>${escapeHtml(pageTitle)}</title>
+  ${renderPwaHeadTags(depth)}
+  ${renderMetaTags({
+    depth,
+    title: pageTitle,
+    description: heroDescription,
+    pagePath,
+    type: 'website',
+  })}
   <link href="${root}css/output.css" rel="stylesheet" />
 </head>
 <body>
@@ -849,7 +919,7 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
         <h2 class="section-title">${escapeHtml(text(i18n, 'about_title', 'About this project'))}</h2>
         <p class="section-description">${escapeHtml(text(i18n, 'about_body', 'This website is maintained by community contributors.'))}</p>
         <p style="margin-top:1rem;">
-          <a class="inline-link" href="https://github.com/symbol/symbol-web" target="_blank" rel="noopener">${ui.editOnGitHub}</a>
+          <a class="inline-link" href="https://github.com/symbol-blockchain-community/symbol-web" target="_blank" rel="noopener">${ui.editOnGitHub}</a>
         </p>
       </div>
     </section>
@@ -874,13 +944,24 @@ function renderCategoryPage(locale: Locale, i18n: I18n, category: Category, arti
   const cards = articles
     .map((article, index) => renderArticleCard(article, `${encodeURIComponent(article.slug)}.html`, locale, depth, `delay-${index % 4}`))
     .join('');
+  const pageTitle = `${categoryTitleMap[category]} | ${text(i18n, 'meta_page_title', 'Symbol Community')}`;
+  const pageDescription = text(i18n, 'meta_page_description', 'Community updates and references.');
+  const pagePath = locale === 'en' ? `${category}/` : `${locale}/${category}/`;
 
   return `<!DOCTYPE html>
 <html lang="${locale}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(categoryTitleMap[category])} | ${escapeHtml(text(i18n, 'meta_page_title', 'Symbol Community'))}</title>
+  <title>${escapeHtml(pageTitle)}</title>
+  ${renderPwaHeadTags(depth)}
+  ${renderMetaTags({
+    depth,
+    title: pageTitle,
+    description: pageDescription,
+    pagePath,
+    type: 'website',
+  })}
   <link href="${root}css/output.css" rel="stylesheet" />
 </head>
 <body>
@@ -920,14 +1001,26 @@ function renderArticlePage(locale: Locale, i18n: I18n, category: Category, artic
   };
 
   const articleDate = formatDate(article.publishedAt, locale);
+  const pageTitle = `${article.title} | ${text(i18n, 'meta_page_title', 'Symbol Community')}`;
+  const pagePath = locale === 'en'
+    ? `${category}/${encodeURIComponent(article.slug)}.html`
+    : `${locale}/${category}/${encodeURIComponent(article.slug)}.html`;
 
   return `<!DOCTYPE html>
 <html lang="${locale}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(article.title)} | ${escapeHtml(text(i18n, 'meta_page_title', 'Symbol Community'))}</title>
-  <meta name="description" content="${escapeHtml(article.description)}" />
+  <title>${escapeHtml(pageTitle)}</title>
+  ${renderPwaHeadTags(depth)}
+  ${renderMetaTags({
+    depth,
+    title: pageTitle,
+    description: article.description,
+    pagePath,
+    type: 'article',
+    imagePath: cover,
+  })}
   <link href="${root}css/output.css" rel="stylesheet" />
 </head>
 <body>
@@ -998,6 +1091,10 @@ function buildSite(): void {
     throw new Error('Assets folder is missing. Expected static-site/assets.');
   }
 
+  if (!fs.existsSync(PUBLIC_SOURCE)) {
+    throw new Error('Public folder is missing. Expected static-site/public.');
+  }
+
   removeDirectory(DIST_DIR);
   ensureDirectory(DIST_DIR);
 
@@ -1011,6 +1108,7 @@ function buildSite(): void {
   }
 
   copyDirectory(ASSETS_SOURCE, path.join(DIST_DIR, 'assets'));
+  copyDirectory(PUBLIC_SOURCE, DIST_DIR);
   fs.writeFileSync(path.join(DIST_DIR, 'sw.js'), SW_DECOMMISSION_SCRIPT);
 
   for (const locale of LOCALES) {
