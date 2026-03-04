@@ -17,41 +17,6 @@ const THEME_COLOR = '#b32af9';
 
 const LOCALES = ['en', 'ja', 'ko', 'zh', 'zh-hant-tw'] as const;
 const CATEGORIES = ['news', 'community', 'docs'] as const;
-const SW_DECOMMISSION_SCRIPT = `
-self.addEventListener('install', () => {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    (async () => {
-      const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
-
-      await self.clients.claim();
-
-      try {
-        await self.registration.unregister();
-      } catch {
-        // ignore
-      }
-
-      const windowClients = await self.clients.matchAll({
-        type: 'window',
-        includeUncontrolled: true,
-      });
-
-      for (const client of windowClients) {
-        try {
-          await client.navigate(client.url);
-        } catch {
-          // ignore
-        }
-      }
-    })(),
-  );
-});
-`.trimStart();
 
 type Locale = (typeof LOCALES)[number];
 type Category = (typeof CATEGORIES)[number];
@@ -311,16 +276,23 @@ function renderPwaHeadTags(depth: number): string {
   <link rel="shortcut icon" href="${root}favicon.ico" />`;
 }
 
-function renderLegacySwCleanupScript(depth: number): string {
-  const swPath = `${getRootPath(depth)}sw.js`;
+function renderLegacySwCleanupScript(): string {
   return `<script>
 (() => {
   if (!('serviceWorker' in navigator)) return;
   window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('${swPath}', { updateViaCache: 'none' })
-      .then((registration) => registration.update())
-      .catch(() => {});
+    const unregister = (registration) =>
+      registration ? registration.unregister().catch(() => false) : Promise.resolve(false);
+
+    if (typeof navigator.serviceWorker.getRegistrations === 'function') {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) => Promise.all(registrations.map((registration) => unregister(registration))))
+        .catch(() => {});
+      return;
+    }
+
+    navigator.serviceWorker.getRegistration().then(unregister).catch(() => {});
   });
 })();
 </script>`;
@@ -925,7 +897,7 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
     </section>
   </main>
   ${renderFooter(locale, i18n, depth)}
-  ${renderLegacySwCleanupScript(depth)}
+  ${renderLegacySwCleanupScript()}
 </body>
 </html>`;
 }
@@ -982,7 +954,7 @@ function renderCategoryPage(locale: Locale, i18n: I18n, category: Category, arti
     </section>
   </main>
   ${renderFooter(locale, i18n, depth)}
-  ${renderLegacySwCleanupScript(depth)}
+  ${renderLegacySwCleanupScript()}
 </body>
 </html>`;
 }
@@ -1042,7 +1014,7 @@ function renderArticlePage(locale: Locale, i18n: I18n, category: Category, artic
     </div>
   </main>
   ${renderFooter(locale, i18n, depth)}
-  ${renderLegacySwCleanupScript(depth)}
+  ${renderLegacySwCleanupScript()}
 </body>
 </html>`;
 }
@@ -1109,7 +1081,6 @@ function buildSite(): void {
 
   copyDirectory(ASSETS_SOURCE, path.join(DIST_DIR, 'assets'));
   copyDirectory(PUBLIC_SOURCE, DIST_DIR);
-  fs.writeFileSync(path.join(DIST_DIR, 'sw.js'), SW_DECOMMISSION_SCRIPT);
 
   for (const locale of LOCALES) {
     console.log(` - ${locale}`);
