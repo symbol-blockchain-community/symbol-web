@@ -22,3 +22,8 @@ yarn-error.log*
 .DS_Store
 *.pem
 *.tsbuildinfo
+
+# Local automation artifacts
+output/playwright/
+.agents/skills/skill-creator/
+skills-lock.json

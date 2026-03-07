@@ -303,6 +303,12 @@ function localeIndexPath(locale: Locale, depth: number): string {
   return locale === 'en' ? `${root}index.html` : `${root}${locale}/index.html`;
 }
 
+function localeScopedPath(locale: Locale, depth: number, relativePath: string): string {
+  const root = getRootPath(depth);
+  const normalized = relativePath.replace(/^\/+/, '');
+  return locale === 'en' ? `${root}${normalized}` : `${root}${locale}/${normalized}`;
+}
+
 function formatDate(dateString: string, locale: Locale): string {
   if (!dateString) return '';
   const date = new Date(dateString);
@@ -759,17 +765,29 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
 
   const docsCards = docs
     .slice(0, 3)
-    .map((article, index) => renderArticleCard(article, `docs/${encodeURIComponent(article.slug)}.html`, locale, depth, `delay-${index}`))
+    .map((article, index) =>
+      renderArticleCard(article, localeScopedPath(locale, depth, `docs/${encodeURIComponent(article.slug)}.html`), locale, depth, `delay-${index}`)
+    )
     .join('');
 
   const newsCards = news
     .slice(0, 6)
-    .map((article, index) => renderArticleCard(article, `news/${encodeURIComponent(article.slug)}.html`, locale, depth, `delay-${index % 4}`))
+    .map((article, index) =>
+      renderArticleCard(article, localeScopedPath(locale, depth, `news/${encodeURIComponent(article.slug)}.html`), locale, depth, `delay-${index % 4}`)
+    )
     .join('');
 
   const communityCards = community
     .slice(0, 6)
-    .map((article, index) => renderArticleCard(article, `community/${encodeURIComponent(article.slug)}.html`, locale, depth, `delay-${index % 4}`))
+    .map((article, index) =>
+      renderArticleCard(
+        article,
+        localeScopedPath(locale, depth, `community/${encodeURIComponent(article.slug)}.html`),
+        locale,
+        depth,
+        `delay-${index % 4}`
+      )
+    )
     .join('');
 
   const heroDescription = text(i18n, 'meta_page_description', 'Community-curated updates, docs, and practical guides around Symbol.');
@@ -843,7 +861,7 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
             <h2 class="section-title">${escapeHtml(text(i18n, 'news_title', ui.latestNews))}</h2>
             <p class="section-description">${escapeHtml(text(i18n, 'meta_page_description', heroDescription))}</p>
           </div>
-          <a class="section-link" href="news/">${ui.viewAll}</a>
+          <a class="section-link" href="${localeScopedPath(locale, depth, 'news/')}">${ui.viewAll}</a>
         </div>
         <div class="article-grid">${newsCards || '<div class="empty-state">No news yet.</div>'}</div>
       </div>
@@ -858,7 +876,7 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
         <div style="height:1.2rem"></div>
         <div class="section-head">
           <h3 class="section-title" style="font-size:1.45rem;">${escapeHtml(text(i18n, 'community_section_release', ui.latestCommunity))}</h3>
-          <a class="section-link" href="community/">${ui.viewAll}</a>
+          <a class="section-link" href="${localeScopedPath(locale, depth, 'community/')}">${ui.viewAll}</a>
         </div>
         <div class="article-grid">${communityCards || '<div class="empty-state">No community updates yet.</div>'}</div>
       </div>
@@ -871,7 +889,7 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
             <h2 class="section-title">${escapeHtml(docsTitle)}</h2>
             <p class="section-description">${escapeHtml(text(i18n, 'easy_section_body', 'Build and learn with curated docs and practical references.'))}</p>
           </div>
-          <a class="section-link" href="docs/">${ui.viewAll}</a>
+          <a class="section-link" href="${localeScopedPath(locale, depth, 'docs/')}">${ui.viewAll}</a>
         </div>
         <div class="article-grid">${docsCards || '<div class="empty-state">No docs yet.</div>'}</div>
       </div>
@@ -914,7 +932,9 @@ function renderCategoryPage(locale: Locale, i18n: I18n, category: Category, arti
   };
 
   const cards = articles
-    .map((article, index) => renderArticleCard(article, `${encodeURIComponent(article.slug)}.html`, locale, depth, `delay-${index % 4}`))
+    .map((article, index) =>
+      renderArticleCard(article, localeScopedPath(locale, depth, `${category}/${encodeURIComponent(article.slug)}.html`), locale, depth, `delay-${index % 4}`)
+    )
     .join('');
   const pageTitle = `${categoryTitleMap[category]} | ${text(i18n, 'meta_page_title', 'Symbol Community')}`;
   const pageDescription = text(i18n, 'meta_page_description', 'Community updates and references.');
@@ -999,7 +1019,7 @@ function renderArticlePage(locale: Locale, i18n: I18n, category: Category, artic
   ${renderHeader(locale, i18n, depth)}
   <main class="article-shell">
     <div class="container article-layout">
-      <a class="back-link" href="${root}${category}/index.html">← ${ui.back}</a>
+      <a class="back-link" href="${localeScopedPath(locale, depth, `${category}/index.html`)}">← ${ui.back}</a>
       <div class="article-header-card reveal">
         ${cover ? `<img class="article-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(article.title)}" loading="lazy" decoding="async" />` : ''}
         <div class="article-header">
