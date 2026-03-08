@@ -12,12 +12,13 @@ It preserves article text exactly, applies numeric ID routing for each locale, v
 
 ## Non-Negotiable Rules
 
-1. Never rewrite article body text for locales explicitly provided in the issue.
-2. Keep punctuation, emojis, links, Markdown, and HTML tags exactly as given.
+1. Never rewrite article body sentences for locales explicitly provided in the issue.
+2. Keep punctuation, emojis, and non-image links exactly as given.
 3. Treat separators such as `以下本文` / `本文以上まで` as control markers, not article body.
 4. Do not "fix" date/title mismatches unless the user explicitly asks.
 5. If publish metadata is required, add only metadata fields (`publishedAt` etc.); do not alter article sentences.
 6. For locales not explicitly provided in the issue, generate translation from the base article according to the localization policy below.
+7. External image URLs inside article body must be downloaded and stored in-repo (`static-site/content/images/`), then replaced with local references.
 
 ## Required Inputs
 
@@ -76,6 +77,11 @@ Write front matter + body as follows:
 
 - `provided` locales: use issue text exactly.
 - `missing` locales: use generated translation from the selected base locale.
+- For body images (Markdown image links and `<img src=\"...\">`):
+  1. Download external image URLs.
+  2. Store them under `static-site/content/images/` (prefer `.webp` format).
+  3. Replace only image source URLs with `../images/<file>`.
+  4. Keep all non-image links unchanged.
 
 If publish mode is required, add these metadata fields to each locale file:
 
@@ -105,6 +111,7 @@ Then verify output visibility:
   - at least one newly added article
   - at least one existing article
 - If new and existing articles both fail in the same locale, classify it as a site routing/link-generation bug (not a content import issue) and fix before opening the PR.
+- Verify no external body image URL remains in new files (for example, no `github.com/user-attachments` references).
 
 Route note:
 - English article path: `/news/<id>`
@@ -139,6 +146,7 @@ When work is done, report:
 - Assume `news` category unless explicitly overridden.
 - Assume article text in issue is authoritative.
 - For multilingual publication, if some supported locales are missing in the issue, auto-generate them by translating from the most substantial provided locale article (not fixed `en`-first).
+- Always migrate external body image URLs to local `content/images` assets.
 - If publish intent is ambiguous:
   - If user asks for "公開", "反映", "トップ表示", treat as publish mode.
   - Otherwise create draft-style files without publish metadata.
