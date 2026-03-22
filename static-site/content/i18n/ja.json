@@ -42,6 +42,8 @@
   "start_card4": "開発者向けの情報",
   "about_title": "運営チームについて",
   "about_body": "Symbol Community Web はコミュニティのメンバーによって運営されています。サイトを運営するチームを紹介します。",
+  "about_related_site_label": "この記事の運用者による他のサイト:",
+  "about_related_site_link_text": "Auto Research Skill",
   "footer_copyright": "© Symbol Community. All rights reserved.",
   "footer_links": {
     "docs": "ドキュメント",
