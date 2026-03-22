@@ -908,6 +908,15 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
       <div class="container">
         <h2 class="section-title">${escapeHtml(text(i18n, 'about_title', 'About this project'))}</h2>
         <p class="section-description">${escapeHtml(text(i18n, 'about_body', 'This website is maintained by community contributors.'))}</p>
+        <p class="section-description" style="margin-top:0.75rem;">
+          ${escapeHtml(text(i18n, 'about_related_site_label', 'Another site run by the operators:'))}
+          <a
+            class="inline-link"
+            href="https://ymuichiro.github.io/auto-research-skill/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >${escapeHtml(text(i18n, 'about_related_site_link_text', 'Auto Research Skill'))}</a>
+        </p>
         <p style="margin-top:1rem;">
           <a class="inline-link" href="https://github.com/symbol-blockchain-community/symbol-web" target="_blank" rel="noopener">${ui.editOnGitHub}</a>
         </p>
