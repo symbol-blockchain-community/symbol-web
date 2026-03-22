@@ -39,6 +39,13 @@ interface Article {
   createdAt?: string;
 }
 
+interface StaticPage {
+  slug: string;
+  title: string;
+  description: string;
+  body: string;
+}
+
 interface Space {
   id: number;
   title: string;
@@ -561,6 +568,32 @@ function loadArticles(locale: Locale, category: Category): Article[] {
   });
 }
 
+function loadStaticPage(locale: Locale, slug: string): StaticPage | undefined {
+  const candidates: Locale[] = [locale];
+
+  if (locale !== 'ja') {
+    candidates.push('ja');
+  }
+
+  for (const candidateLocale of candidates) {
+    const filePath = path.join(CONTENT_DIR, candidateLocale, 'pages', `${slug}.md`);
+    if (!fs.existsSync(filePath)) continue;
+
+    const file = fs.readFileSync(filePath, 'utf-8');
+    const parsed = matter(file);
+    const body = parsed.content.trim();
+
+    return {
+      slug,
+      title: asString(parsed.data.title, slug),
+      description: asString(parsed.data.description, shortText(stripMarkdown(body), 160)),
+      body,
+    };
+  }
+
+  return undefined;
+}
+
 function loadSpaces(locale: Locale): Space[] {
   const spacesPath = path.join(CONTENT_DIR, locale, 'spaces.json');
   if (!fs.existsSync(spacesPath)) return [];
@@ -908,14 +941,8 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
       <div class="container">
         <h2 class="section-title">${escapeHtml(text(i18n, 'about_title', 'About this project'))}</h2>
         <p class="section-description">${escapeHtml(text(i18n, 'about_body', 'This website is maintained by community contributors.'))}</p>
-        <p class="section-description" style="margin-top:0.75rem;">
-          ${escapeHtml(text(i18n, 'about_related_site_label', 'Another site run by the operators:'))}
-          <a
-            class="inline-link"
-            href="https://ymuichiro.github.io/auto-research-skill/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >${escapeHtml(text(i18n, 'about_related_site_link_text', 'Auto Research Skill'))}</a>
+        <p style="margin-top:1rem;">
+          <a class="inline-link" href="${localeScopedPath(locale, depth, 'about/index.html')}">${escapeHtml(text(i18n, 'about_page_link_text', 'Learn more about the team'))}</a>
         </p>
         <p style="margin-top:1rem;">
           <a class="inline-link" href="https://github.com/symbol-blockchain-community/symbol-web" target="_blank" rel="noopener">${ui.editOnGitHub}</a>
@@ -1048,11 +1075,63 @@ function renderArticlePage(locale: Locale, i18n: I18n, category: Category, artic
 </html>`;
 }
 
+function renderStaticPage(locale: Locale, i18n: I18n, page: StaticPage): string {
+  const ui = UI_TEXT[locale];
+  const depth = locale === 'en' ? 1 : 2;
+  const root = getRootPath(depth);
+  const bodyHtml = renderMarkdown(page.body, depth);
+  const pageTitle = text(i18n, 'about_page_meta_title', `${page.title} | ${text(i18n, 'meta_page_title', 'Symbol Community')}`);
+  const pageDescription = text(i18n, 'about_page_meta_description', page.description);
+
+  return `<!DOCTYPE html>
+<html lang="${locale}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(pageTitle)}</title>
+  ${renderMetaTags({
+    depth,
+    title: pageTitle,
+    description: pageDescription,
+    pagePath: locale === 'en' ? 'about/index.html' : `${locale}/about/index.html`,
+  })}
+  ${renderPwaHeadTags(depth)}
+  <link rel="stylesheet" href="${root}css/output.css" />
+</head>
+<body>
+  ${renderHeader(locale, i18n, depth)}
+  <main class="page-main article-shell">
+    <div class="container article-layout">
+      <a class="back-link" href="${localeIndexPath(locale, depth)}">← ${ui.back}</a>
+      <div class="article-header-card reveal">
+        <div class="article-header">
+          <div class="article-meta">${escapeHtml(text(i18n, 'about_title', 'About Us'))}</div>
+          <h1>${escapeHtml(text(i18n, 'about_page_title', page.title))}</h1>
+          <p class="page-description">${escapeHtml(text(i18n, 'about_page_title_description', page.description))}</p>
+        </div>
+      </div>
+      <article class="markdown-body reveal delay-1">
+        ${bodyHtml}
+        <hr />
+        <p>
+          ${escapeHtml(text(i18n, 'about_related_site_label', 'Another site run by the operators:'))}
+          <a href="https://ymuichiro.github.io/auto-research-skill/">${escapeHtml(text(i18n, 'about_related_site_link_text', 'Auto Research Skill'))}</a>
+        </p>
+      </article>
+    </div>
+  </main>
+  ${renderFooter(locale, i18n, depth)}
+  ${renderLegacySwCleanupScript()}
+</body>
+</html>`;
+}
+
 function buildLocale(locale: Locale): void {
   const i18n = loadI18n(locale);
   const news = loadArticles(locale, 'news');
   const community = loadArticles(locale, 'community');
   const docs = loadArticles(locale, 'docs');
+  const aboutPage = loadStaticPage(locale, 'about');
   const spaces = loadSpaces(locale);
 
   const outputDir = locale === 'en' ? DIST_DIR : path.join(DIST_DIR, locale);
@@ -1060,6 +1139,13 @@ function buildLocale(locale: Locale): void {
 
   const homeHtml = renderHomePage(locale, i18n, news, community, docs, spaces);
   fs.writeFileSync(path.join(outputDir, 'index.html'), homeHtml);
+
+  if (aboutPage) {
+    const aboutDir = path.join(outputDir, 'about');
+    ensureDirectory(aboutDir);
+    const aboutHtml = renderStaticPage(locale, i18n, aboutPage);
+    fs.writeFileSync(path.join(aboutDir, 'index.html'), aboutHtml);
+  }
 
   const categoryMap: Record<Category, Article[]> = {
     news,
