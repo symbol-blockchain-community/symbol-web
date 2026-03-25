@@ -1,5 +1,13 @@
 [
   {
+    "id": 151,
+    "title": "Symbol - XYM 資訊交流專用",
+    "body": "這是一個用於交流 XYM 資訊的 LINE 群組。",
+    "url": "https://line.me/ti/g2/jWzaIByT-FYoiFbZhVbq2biB2Ifefj9PiP5bWw?utm_source=invitation&utm_medium=link_copy&utm_campaign=default",
+    "category": "chat",
+    "platform": "web"
+  },
+  {
     "id": 146,
     "title": "Bug Report",
     "body": "Reporting a vulnerability or bug in symbols",
