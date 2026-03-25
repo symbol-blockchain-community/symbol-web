@@ -1,5 +1,13 @@
 [
   {
+    "id": 149,
+    "title": "Symbol - XYM 정보 교환 전용",
+    "body": "XYM 정보를 교환하기 위한 LINE 그룹입니다.",
+    "url": "https://line.me/ti/g2/jWzaIByT-FYoiFbZhVbq2biB2Ifefj9PiP5bWw?utm_source=invitation&utm_medium=link_copy&utm_campaign=default",
+    "category": "chat",
+    "platform": "web"
+  },
+  {
     "id": 144,
     "title": "Bug Report",
     "body": "Reporting a vulnerability or bug in symbols",
