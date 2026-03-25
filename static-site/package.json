@@ -12,7 +12,7 @@
     "new:article": "npx ts-node scripts/new-article.ts",
     "crawl:strapi": "npx ts-node scripts/crawl-strapi.ts",
     "migrate:json": "npx ts-node scripts/migrate-json-to-md.ts",
-    "preview": "npx serve dist"
+    "preview": "python -m http.server -d dist 3000"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.18",
@@ -22,7 +22,6 @@
     "gray-matter": "^4.0.3",
     "marked": "^17.0.2",
     "sanitize-html": "^2.17.0",
-    "serve": "^14.2.5",
     "tailwindcss": "^4.1.18",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
