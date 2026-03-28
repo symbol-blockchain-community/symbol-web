@@ -17,12 +17,21 @@ prefix_rule(
 prefix_rule(
     pattern = ["gh", "issue", "view"],
     decision = "allow",
-    justification = "Read GitHub issue body and provided locale blocks for article import.",
+    justification = "Read GitHub issue body, state, author, and assignees for scope and import decisions.",
     match = [
-        "gh issue view 51 --repo symbol-blockchain-community/symbol-web --json number,title,body,url,author",
+        "gh issue view 51 --repo symbol-blockchain-community/symbol-web --json number,title,body,url,state,author,assignees",
     ],
     not_match = [
         "gh issue list --repo symbol-blockchain-community/symbol-web",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "edit"],
+    decision = "allow",
+    justification = "Add ymuichiro as assignee when the issue is out of scope or not yet assigned.",
+    match = [
+        "gh issue edit 51 --repo symbol-blockchain-community/symbol-web --add-assignee ymuichiro",
     ],
 )
 
@@ -52,7 +61,7 @@ prefix_rule(
 
 prefix_rule(
     pattern = ["npm", "--prefix", "static-site", "ci"],
-    decision = "prompt",
+    decision = "allow",
     justification = "Install locked static-site dependencies when the environment is missing or stale.",
     match = [
         "npm --prefix static-site ci",
@@ -122,8 +131,8 @@ prefix_rule(
 
 prefix_rule(
     pattern = ["git", "push", "-u", "origin"],
-    decision = "prompt",
-    justification = "Push the workflow branch to the shared GitHub repository.",
+    decision = "allow",
+    justification = "Push the workflow branch to the shared GitHub repository during autonomous PR creation.",
     match = [
         "git push -u origin codex/issue-news-article-pr-rules",
     ],
@@ -134,8 +143,8 @@ prefix_rule(
 
 prefix_rule(
     pattern = ["gh", "pr", "create"],
-    decision = "prompt",
-    justification = "Open the pull request for the issue article workflow change.",
+    decision = "allow",
+    justification = "Open the pull request for the content change during autonomous execution.",
     match = [
         "gh pr create --base main --head codex/issue-news-article-pr-rules --title feat(codex): add issue article workflow rules --body Workflow update",
     ],
