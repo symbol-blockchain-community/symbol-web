@@ -607,6 +607,131 @@ img {
   font-size: 0.9rem;
 }
 
+.article-share-card {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  background: color-mix(in srgb, var(--surface) 92%, #0b152e);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+
+.article-share-head {
+  display: block;
+}
+
+.article-share-title {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.article-share-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.55rem;
+  margin-top: 0.6rem;
+  align-items: center;
+}
+
+.share-action {
+  appearance: none;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--border) 90%, transparent);
+  background: color-mix(in srgb, var(--surface-strong) 90%, #0b1528);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.share-action svg {
+  display: block;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.share-action:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.03);
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+  box-shadow: 0 10px 20px -18px rgba(2, 8, 23, 0.95);
+}
+
+.share-action[data-network='x'] {
+  background: color-mix(in srgb, #0f172a 78%, var(--surface-strong));
+  border-color: color-mix(in srgb, #94a3b8 24%, transparent);
+}
+
+.share-action[data-network='facebook'] {
+  background: color-mix(in srgb, #1877f2 22%, var(--surface-strong));
+  border-color: color-mix(in srgb, #8fc3ff 24%, transparent);
+}
+
+.share-action[data-network='linkedin'] {
+  background: color-mix(in srgb, #0a66c2 22%, var(--surface-strong));
+  border-color: color-mix(in srgb, #8bc5ff 22%, transparent);
+}
+
+.share-action[data-network='line'] {
+  background: color-mix(in srgb, #06c755 22%, var(--surface-strong));
+  border-color: color-mix(in srgb, #98f6b9 22%, transparent);
+}
+
+.share-action[data-network='copy'] {
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface-strong));
+  border-color: color-mix(in srgb, var(--primary) 24%, transparent);
+  color: var(--primary-strong);
+}
+
+.share-action[data-network='native'] {
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface-strong));
+  border-color: color-mix(in srgb, var(--primary) 24%, var(--border));
+  color: var(--primary-strong);
+}
+.share-action[data-copy-state='success'] {
+  color: #bdf7ce;
+  border-color: color-mix(in srgb, #7ce7a1 30%, transparent);
+  background: color-mix(in srgb, #1d6b45 26%, var(--surface-strong));
+  animation: share-copy-pop 0.28s ease;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes share-copy-pop {
+  0% {
+    transform: scale(0.88);
+  }
+
+  70% {
+    transform: scale(1.06);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
 .markdown-body {
   margin-top: 1rem;
   background: color-mix(in srgb, var(--surface) 94%, #0a1329);
@@ -820,5 +945,15 @@ img {
 
   .article-cover {
     max-height: 240px;
+  }
+
+  .share-action {
+    width: 44px;
+  }
+
+  .article-share-actions {
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.1rem;
   }
 }

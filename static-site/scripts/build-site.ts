@@ -71,6 +71,12 @@ interface UiText {
   learnMore: string;
   openDocs: string;
   editOnGitHub: string;
+  shareHeading: string;
+  shareNative: string;
+  shareCopy: string;
+  shareOnX: string;
+  shareOnFacebook: string;
+  shareOnLinkedIn: string;
 }
 
 interface MetaOptions {
@@ -99,6 +105,12 @@ const UI_TEXT: Record<Locale, UiText> = {
     learnMore: 'Learn more',
     openDocs: 'Open docs',
     editOnGitHub: 'Edit on GitHub',
+    shareHeading: 'Share this article',
+    shareNative: 'Share',
+    shareCopy: 'Copy title + link',
+    shareOnX: 'X',
+    shareOnFacebook: 'Facebook',
+    shareOnLinkedIn: 'LinkedIn',
   },
   ja: {
     menu: 'メニュー',
@@ -116,6 +128,12 @@ const UI_TEXT: Record<Locale, UiText> = {
     learnMore: '詳しく見る',
     openDocs: 'ドキュメントへ',
     editOnGitHub: 'GitHub で編集',
+    shareHeading: 'この記事を共有',
+    shareNative: '共有する',
+    shareCopy: 'タイトル+リンクをコピー',
+    shareOnX: 'X',
+    shareOnFacebook: 'Facebook',
+    shareOnLinkedIn: 'LinkedIn',
   },
   ko: {
     menu: '메뉴',
@@ -133,6 +151,12 @@ const UI_TEXT: Record<Locale, UiText> = {
     learnMore: '자세히 보기',
     openDocs: '문서 열기',
     editOnGitHub: 'GitHub에서 편집',
+    shareHeading: '이 글 공유하기',
+    shareNative: '공유',
+    shareCopy: '제목+링크 복사',
+    shareOnX: 'X',
+    shareOnFacebook: 'Facebook',
+    shareOnLinkedIn: 'LinkedIn',
   },
   zh: {
     menu: '菜单',
@@ -150,6 +174,12 @@ const UI_TEXT: Record<Locale, UiText> = {
     learnMore: '了解更多',
     openDocs: '打开文档',
     editOnGitHub: '在 GitHub 编辑',
+    shareHeading: '分享这篇文章',
+    shareNative: '分享',
+    shareCopy: '复制标题和链接',
+    shareOnX: 'X',
+    shareOnFacebook: 'Facebook',
+    shareOnLinkedIn: 'LinkedIn',
   },
   'zh-hant-tw': {
     menu: '選單',
@@ -167,6 +197,12 @@ const UI_TEXT: Record<Locale, UiText> = {
     learnMore: '了解更多',
     openDocs: '開啟文件',
     editOnGitHub: '在 GitHub 編輯',
+    shareHeading: '分享這篇文章',
+    shareNative: '分享',
+    shareCopy: '複製標題與連結',
+    shareOnX: 'X',
+    shareOnFacebook: 'Facebook',
+    shareOnLinkedIn: 'LinkedIn',
   },
 };
 
@@ -300,6 +336,109 @@ function renderLegacySwCleanupScript(): string {
     }
 
     navigator.serviceWorker.getRegistration().then(unregister).catch(() => {});
+  });
+})();
+</script>`;
+}
+
+function renderArticleShareScript(): string {
+  return `<script>
+(() => {
+  const panels = document.querySelectorAll('[data-share-panel]');
+  if (!panels.length) return;
+
+  const buildPayload = (title, url) => [title, url].filter(Boolean).join('\\n');
+
+  const copyText = async (value) => {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+
+    const textArea = document.createElement('textarea');
+    textArea.value = value;
+    textArea.setAttribute('readonly', 'true');
+    textArea.style.position = 'absolute';
+    textArea.style.left = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    textArea.remove();
+  };
+
+  const animateCopySuccess = (button) => {
+    if (!(button instanceof HTMLElement)) return;
+    const activeTimer = Number(button.dataset.copyTimer || '0');
+    if (activeTimer) window.clearTimeout(activeTimer);
+
+    button.dataset.copyState = 'success';
+    button.innerHTML = '${renderCopySuccessIcon()}<span class="sr-only">Copied</span>';
+    button.dataset.copyTimer = String(window.setTimeout(() => {
+      button.innerHTML = '${renderShareIcon('copy')}<span class="sr-only">Copy</span>';
+      delete button.dataset.copyState;
+      delete button.dataset.copyTimer;
+    }, 1600));
+  };
+
+  const openShareWindow = (shareUrl) => {
+    const popup = window.open(shareUrl, '_blank', 'noopener,noreferrer,width=640,height=720');
+    if (popup) popup.opener = null;
+  };
+
+  panels.forEach((panel) => {
+    const nativeButton = panel.querySelector('[data-share-action="native"]');
+    if (nativeButton && typeof navigator.share !== 'function') {
+      nativeButton.hidden = true;
+    }
+
+    panel.addEventListener('click', async (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+
+      const action = target.closest('[data-share-action]');
+      if (!(action instanceof HTMLElement)) return;
+
+      const actionType = action.dataset.shareAction;
+      const title = panel.getAttribute('data-share-title') || document.title;
+      const url = window.location.href;
+      const payload = buildPayload(title, url);
+
+      try {
+        switch (actionType) {
+          case 'native':
+            if (typeof navigator.share !== 'function') return;
+            await navigator.share({ title, text: title, url });
+            return;
+          case 'copy':
+            await copyText(payload);
+            animateCopySuccess(action);
+            return;
+          case 'x': {
+            const shareUrl = new URL('https://twitter.com/intent/tweet');
+            shareUrl.searchParams.set('text', title);
+            shareUrl.searchParams.set('url', url);
+            openShareWindow(shareUrl.toString());
+            return;
+          }
+          case 'facebook': {
+            const shareUrl = new URL('https://www.facebook.com/sharer/sharer.php');
+            shareUrl.searchParams.set('u', url);
+            openShareWindow(shareUrl.toString());
+            return;
+          }
+          case 'linkedin': {
+            const shareUrl = new URL('https://www.linkedin.com/sharing/share-offsite/');
+            shareUrl.searchParams.set('url', url);
+            openShareWindow(shareUrl.toString());
+            return;
+          }
+          default:
+            return;
+        }
+      } catch (error) {
+        console.error('share action failed', error);
+      }
+    });
   });
 })();
 </script>`;
@@ -692,6 +831,44 @@ function renderArticleCard(article: Article, href: string, locale: Locale, depth
 </a>`;
 }
 
+function renderArticleShareCard(ui: UiText, articleTitle: string): string {
+  return `<section class="article-share-card reveal delay-1"
+        data-share-panel
+        data-share-title="${escapeHtml(articleTitle)}">
+        <div class="article-share-head">
+          <div>
+            <h2 class="article-share-title">${escapeHtml(ui.shareHeading)}</h2>
+          </div>
+        </div>
+        <div class="article-share-actions">
+          <button class="share-action share-action-native" type="button" data-share-action="native" data-network="native" aria-label="${escapeHtml(ui.shareNative)}">${renderNativeShareIcon()}<span class="sr-only">${escapeHtml(ui.shareNative)}</span></button>
+          <button class="share-action" type="button" data-share-action="x" data-network="x" aria-label="${escapeHtml(ui.shareOnX)}">${renderShareIcon('x')}<span class="sr-only">${escapeHtml(ui.shareOnX)}</span></button>
+          <button class="share-action" type="button" data-share-action="facebook" data-network="facebook" aria-label="${escapeHtml(ui.shareOnFacebook)}">${renderShareIcon('facebook')}<span class="sr-only">${escapeHtml(ui.shareOnFacebook)}</span></button>
+          <button class="share-action" type="button" data-share-action="linkedin" data-network="linkedin" aria-label="${escapeHtml(ui.shareOnLinkedIn)}">${renderShareIcon('linkedin')}<span class="sr-only">${escapeHtml(ui.shareOnLinkedIn)}</span></button>
+          <button class="share-action" type="button" data-share-action="copy" data-network="copy" aria-label="${escapeHtml(ui.shareCopy)}">${renderShareIcon('copy')}<span class="sr-only">${escapeHtml(ui.shareCopy)}</span></button>
+        </div>
+      </section>`;
+}
+
+function renderShareIcon(network: 'x' | 'facebook' | 'linkedin' | 'copy'): string {
+  const icons = {
+    x: '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817-5.966 6.817H1.68l7.73-8.835L1.255 2.25h6.827l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117Z"/></svg>',
+    facebook: '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.099 4.388 23.094 10.125 24v-8.438H7.078v-3.49h3.047V9.413c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.49 0-1.955.925-1.955 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.099 24 12.073Z"/></svg>',
+    linkedin: '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.48 6S0 4.88 0 3.5 1.12 1 2.48 1s2.5 1.12 2.5 2.5ZM.5 8h4V23h-4V8Zm7 0h3.83v2.05h.05c.53-1 1.84-2.05 3.8-2.05 4.06 0 4.81 2.67 4.81 6.14V23h-4v-7.75c0-1.85-.03-4.23-2.58-4.23-2.59 0-2.99 2.02-2.99 4.1V23h-4V8Z"/></svg>',
+    copy: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
+  } as const;
+
+  return icons[network];
+}
+
+function renderNativeShareIcon(): string {
+  return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"></path></svg>';
+}
+
+function renderCopySuccessIcon(): string {
+  return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4 4L19 7"></path></svg>';
+}
+
 function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: Article[], docs: Article[], spaces: Space[]): string {
   const ui = UI_TEXT[locale];
   const root = getRootPath(locale === 'en' ? 0 : 1);
@@ -1064,12 +1241,14 @@ function renderArticlePage(locale: Locale, i18n: I18n, category: Category, artic
           <p class="page-description">${escapeHtml(article.description)}</p>
         </div>
       </div>
-      <article class="markdown-body reveal delay-1">
+      ${renderArticleShareCard(ui, article.title)}
+      <article class="markdown-body reveal delay-2">
         ${bodyHtml}
       </article>
     </div>
   </main>
   ${renderFooter(locale, i18n, depth)}
+  ${renderArticleShareScript()}
   ${renderLegacySwCleanupScript()}
 </body>
 </html>`;
