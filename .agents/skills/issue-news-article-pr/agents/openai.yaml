@@ -1,4 +1,19 @@
 interface:
   display_name: "Issue Article to PR"
-  short_description: "Import issue articles to localized news files and open PRs"
-  default_prompt: "Use $issue-news-article-pr to register a GitHub issue article into static-site news files without changing the body text, then validate and create a PR."
+  short_description: "Autonomously publish assigned issue articles and open PRs"
+  default_prompt: >-
+    Use $issue-news-article-pr for unattended periodic execution. Obey
+    `./codex/rules/issue-news-article-pr.rules` strictly and use only commands
+    already permitted there. First inspect the issue with `gh issue view
+    <number> --repo symbol-blockchain-community/symbol-web --json
+    number,title,body,url,state,author,assignees`. The required assignee is
+    `ymuichiro` (GitHub account id `47295014`). If the issue is not a request
+    to add, modify, or delete site article content, or if `ymuichiro` is not in
+    `assignees`, then run only `gh issue edit <number> --repo
+    symbol-blockchain-community/symbol-web --add-assignee ymuichiro` when
+    needed and stop without any other action. Only when the issue is in scope
+    and `ymuichiro` is already assigned should you resolve the issue author
+    metadata, enforce the approved-author gate, publish the article, validate
+    with `npm --prefix static-site run build` and `npm --prefix static-site run
+    test`, then commit, push, and open the PR autonomously without pausing. Do
+    not merge automatically during periodic runs.

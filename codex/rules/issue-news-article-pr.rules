@@ -1,0 +1,178 @@
+# Rules for the symbol-web issue-news-article-pr workflow.
+# Keep commands standalone so prefix matching stays explicit.
+
+prefix_rule(
+    pattern = ["codex", "execpolicy", "check"],
+    decision = "allow",
+    justification = "Validate the issue-news-article-pr rules before using them.",
+    match = [
+        "codex execpolicy check --pretty --rules codex/rules/issue-news-article-pr.rules -- gh issue view 51 --repo symbol-blockchain-community/symbol-web --json number,title,body,url,author",
+        "codex execpolicy check --pretty --rules codex/rules/issue-news-article-pr.rules -- gh pr merge 999 --auto --squash --delete-branch",
+    ],
+    not_match = [
+        "codex execpolicy",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "view"],
+    decision = "allow",
+    justification = "Read GitHub issue body, state, author, and assignees for scope and import decisions.",
+    match = [
+        "gh issue view 51 --repo symbol-blockchain-community/symbol-web --json number,title,body,url,state,author,assignees",
+    ],
+    not_match = [
+        "gh issue list --repo symbol-blockchain-community/symbol-web",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "edit"],
+    decision = "allow",
+    justification = "Add ymuichiro as assignee when the issue is out of scope or not yet assigned.",
+    match = [
+        "gh issue edit 51 --repo symbol-blockchain-community/symbol-web --add-assignee ymuichiro",
+    ],
+)
+
+prefix_rule(
+    pattern = [
+        "gh",
+        "api",
+        "graphql",
+        "-f",
+        "query=query($owner:String!, $name:String!, $number:Int!) { repository(owner:$owner, name:$name) { issue(number:$number) { number title url authorAssociation author { login __typename ... on User { databaseId name } } } } }",
+        "-f",
+        "owner=symbol-blockchain-community",
+        "-f",
+        "name=symbol-web",
+        "-F",
+    ],
+    decision = "allow",
+    justification = "Resolve issue author login, display name, numeric account id, and authorAssociation before publish/update actions.",
+    match = [
+        "gh api graphql -f \"query=query($owner:String!, $name:String!, $number:Int!) { repository(owner:$owner, name:$name) { issue(number:$number) { number title url authorAssociation author { login __typename ... on User { databaseId name } } } } }\" -f owner=symbol-blockchain-community -f name=symbol-web -F number=51",
+    ],
+    not_match = [
+        "gh api graphql -f \"query=mutation { closeIssue(input:{issueId:\\\"x\\\"}) { clientMutationId } }\"",
+        "gh api repos/symbol-blockchain-community/symbol-web/issues/51",
+    ],
+)
+
+prefix_rule(
+    pattern = ["npm", "--prefix", "static-site", "ci"],
+    decision = "allow",
+    justification = "Install locked static-site dependencies when the environment is missing or stale.",
+    match = [
+        "npm --prefix static-site ci",
+    ],
+    not_match = [
+        "npm install",
+    ],
+)
+
+prefix_rule(
+    pattern = ["npm", "--prefix", "static-site", "run", ["build", "test"]],
+    decision = "allow",
+    justification = "Run the symbol-web static-site validation steps.",
+    match = [
+        "npm --prefix static-site run build",
+        "npm --prefix static-site run test",
+    ],
+    not_match = [
+        "npm --prefix static-site run preview",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "switch", "-c"],
+    decision = "allow",
+    justification = "Create the workflow branch with the required codex prefix.",
+    match = [
+        "git switch -c codex/issue-news-article-pr-rules",
+    ],
+    not_match = [
+        "git switch main",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "status", "--short"],
+    decision = "allow",
+    justification = "Inspect the worktree before staging.",
+    match = [
+        "git status --short",
+    ],
+    not_match = [
+        "git status",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "add"],
+    decision = "allow",
+    justification = "Stage the intended content and rule files for commit.",
+    match = [
+        "git add .agents/skills/issue-news-article-pr/SKILL.md codex/rules/issue-news-article-pr.rules .agents/skills/issue-news-article-pr/agents/openai.yaml",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "commit", "-m"],
+    decision = "allow",
+    justification = "Create the local conventional commit for the workflow update.",
+    match = [
+        "git commit -m feat(codex): add issue article workflow rules",
+    ],
+    not_match = [
+        "git commit --amend -m feat(codex): add issue article workflow rules",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "-u", "origin"],
+    decision = "allow",
+    justification = "Push the workflow branch to the shared GitHub repository during autonomous PR creation.",
+    match = [
+        "git push -u origin codex/issue-news-article-pr-rules",
+    ],
+    not_match = [
+        "git push --force origin codex/issue-news-article-pr-rules",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "create"],
+    decision = "allow",
+    justification = "Open the pull request for the content change during autonomous execution.",
+    match = [
+        "gh pr create --base main --head codex/issue-news-article-pr-rules --title feat(codex): add issue article workflow rules --body Workflow update",
+    ],
+    not_match = [
+        "gh pr checkout 123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "view"],
+    decision = "allow",
+    justification = "Inspect the PR URL, checks, and review status before merge.",
+    match = [
+        "gh pr view 999 --json url,reviewDecision,mergeStateStatus,statusCheckRollup",
+    ],
+    not_match = [
+        "gh issue view 51",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "merge"],
+    decision = "prompt",
+    justification = "Merge the approved PR after required checks succeed.",
+    match = [
+        "gh pr merge 999 --auto --squash --delete-branch",
+    ],
+    not_match = [
+        "gh pr create --base main",
+    ],
+)
