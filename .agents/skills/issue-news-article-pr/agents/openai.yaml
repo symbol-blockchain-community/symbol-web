@@ -1,4 +1,4 @@
 interface:
   display_name: "Issue Article to PR"
   short_description: "Import issue articles to localized news files and open PRs"
-  default_prompt: "Use $issue-news-article-pr to register a GitHub issue article into static-site news files without changing the body text, then validate and create a PR."
+  default_prompt: "Use $issue-news-article-pr to register a GitHub issue article into static-site news files without changing the body text, only if the issue author is approved, then validate and create a PR."

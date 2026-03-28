@@ -8,7 +8,7 @@ description: Add publish-ready news articles from a GitHub issue to symbol-web w
 ## Overview
 
 Use this skill when content is provided in a GitHub Issue and must be registered as new `news` articles in `symbol-web`.
-It preserves article text exactly, applies numeric ID routing for each locale, validates the static build, and prepares a PR.
+It preserves article text exactly, applies numeric ID routing for each locale, validates the static build, prepares a PR, and gates publish/update actions on approved issue authors.
 
 ## Non-Negotiable Rules
 
@@ -19,6 +19,11 @@ It preserves article text exactly, applies numeric ID routing for each locale, v
 5. If publish metadata is required, add only metadata fields (`publishedAt` etc.); do not alter article sentences.
 6. For locales not explicitly provided in the issue, generate translation from the base article according to the localization policy below.
 7. External image URLs inside article body must be downloaded and stored in-repo (`static-site/content/images/`), then replaced with local references.
+8. Before publishing or modifying article files, resolve the issue author's GitHub `login`, display `name`, numeric account id, and `authorAssociation`.
+9. Proceed automatically only when the issue author is approved:
+   - approved by default when `authorAssociation` is `OWNER`, `MEMBER`, or `COLLABORATOR`
+   - otherwise require an explicit allowlist or user confirmation that matches both `login` and numeric account id
+10. If author approval cannot be established, stop before writing files or opening a PR and report the author metadata to the user.
 
 ## Required Inputs
 
@@ -26,6 +31,34 @@ It preserves article text exactly, applies numeric ID routing for each locale, v
 - Target repo root (`symbol-web`)
 - Target category (`news`, unless user requests another)
 - Publish mode (`true` when user says "公開", "publish", or "トップに表示したい")
+- Approved-author policy when the issue author is not covered by the default `authorAssociation` rule above
+
+## Command Inventory
+
+Run commands as standalone invocations. Avoid chained shell scripts so `prefix_rule()` matching remains exact and auditable.
+
+1. Fetch issue body and provided locale blocks:
+   - `gh issue view <number> --repo symbol-blockchain-community/symbol-web --json number,title,body,url,author`
+2. Fetch issue author approval metadata:
+   - `gh api graphql -f 'query=query($owner:String!, $name:String!, $number:Int!) { repository(owner:$owner, name:$name) { issue(number:$number) { number title url authorAssociation author { login __typename ... on User { databaseId name } } } } }' -f owner=symbol-blockchain-community -f name=symbol-web -F number=<number>`
+3. Validate the rules file against a target command:
+   - `codex execpolicy check --pretty --rules codex/rules/issue-news-article-pr.rules -- <command...>`
+4. Install locked dependencies when needed:
+   - `npm --prefix static-site ci`
+5. Validate the site:
+   - `npm --prefix static-site run build`
+   - `npm --prefix static-site run test`
+6. Prepare the branch and commit:
+   - `git switch -c codex/<topic>`
+   - `git status --short`
+   - `git add <paths...>`
+   - `git commit -m "<conventional commit>"`
+7. Publish and review the PR:
+   - `git push -u origin codex/<topic>`
+   - `gh pr create --base main --head codex/<topic> --title "<title>" --body "<body>"`
+   - `gh pr view <number> --json url,reviewDecision,mergeStateStatus,statusCheckRollup`
+8. Merge after requirements are satisfied:
+   - `gh pr merge <number> --auto --squash --delete-branch`
 
 ## Workflow
 
@@ -33,10 +66,14 @@ It preserves article text exactly, applies numeric ID routing for each locale, v
 
 - Fetch issue body using GitHub API.
 - Identify:
+  - Issue author metadata: `login`, display `name`, numeric account id, `authorAssociation`
   - Main article front matter (`title`, `description`, `headerImage`)
   - Main body section between markers
   - Localization blocks (`locale: en`, `locale: ko`, etc.) if present
 - Keep extracted content byte-for-byte where possible.
+- Before any publish/update work, verify the author against the approval gate:
+  - accept automatically for `OWNER`, `MEMBER`, `COLLABORATOR`
+  - otherwise require an explicit approved-author match on both `login` and numeric account id
 - Build a locale coverage matrix for supported locales (`en`, `ja`, `ko`, `zh`, `zh-hant-tw`):
   - `provided`: locale block exists (or main body is `ja` base article)
   - `missing`: no locale block exists
@@ -112,6 +149,7 @@ Then verify output visibility:
   - at least one existing article
 - If new and existing articles both fail in the same locale, classify it as a site routing/link-generation bug (not a content import issue) and fix before opening the PR.
 - Verify no external body image URL remains in new files (for example, no `github.com/user-attachments` references).
+- If the workflow depends on new exec-policy rules, run `codex execpolicy check` for the issue-fetch, validation, push, PR-create, and PR-merge commands before relying on them.
 
 Route note:
 - English article path: `/news/<id>`
@@ -139,7 +177,8 @@ When work is done, report:
 2. Locale -> ID mapping
 3. Validation command outcomes (`build`, `test`)
 4. URL/path confirmation notes (`/news/<id>` vs `/<locale>/news/<id>`)
-5. PR URL
+5. Issue author approval note (`login`, `name`, numeric account id, `authorAssociation`)
+6. PR URL
 
 ## Practical Defaults
 
@@ -147,6 +186,8 @@ When work is done, report:
 - Assume article text in issue is authoritative.
 - For multilingual publication, if some supported locales are missing in the issue, auto-generate them by translating from the most substantial provided locale article (not fixed `en`-first).
 - Always migrate external body image URLs to local `content/images` assets.
+- If `static-site/node_modules` is missing or stale, run `npm --prefix static-site ci` before `build` / `test`.
+- Prefer exact standalone commands over compound shell wrappers so Codex rules can match the intended prefixes.
 - If publish intent is ambiguous:
   - If user asks for "公開", "反映", "トップ表示", treat as publish mode.
   - Otherwise create draft-style files without publish metadata.
