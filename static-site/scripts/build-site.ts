@@ -1112,11 +1112,6 @@ function renderStaticPage(locale: Locale, i18n: I18n, page: StaticPage): string 
       </div>
       <article class="markdown-body reveal delay-1">
         ${bodyHtml}
-        <hr />
-        <p>
-          ${escapeHtml(text(i18n, 'about_related_site_label', 'Another site run by the operators:'))}
-          <a href="https://ymuichiro.github.io/auto-research-skill/">${escapeHtml(text(i18n, 'about_related_site_link_text', 'Auto Research Skill'))}</a>
-        </p>
       </article>
     </div>
   </main>
