@@ -9,7 +9,7 @@ This directory contains the complete website implementation used for GitHub Page
 
 ## Commands
 
-- `npm run build` : build CSS + generate all static pages into `dist/`
+- `npm run build` : build CSS + generate all static pages, `sitemap.xml`, and `robots.txt` into `dist/`
 - `npm run test` : build + check local links in generated HTML
 - `npm run preview` : serve `dist/` locally
 - `npm run new:article -- --locale=ja --category=news --slug=2026-02-release --title='Title'` : create a Markdown article file
@@ -53,3 +53,4 @@ Body in Markdown.
 5. Open a Pull Request.
 
 GitHub Actions validates build + links for every PR.
+The sitemap and robots file are generated automatically from the current site structure during build, so they do not require manual updates when pages are added.
