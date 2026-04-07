@@ -14,12 +14,14 @@ const IMAGES_SOURCE = path.join(CONTENT_DIR, 'images');
 const SITE_URL = (process.env.SITE_URL || process.env.NEXT_PUBLIC_HOSTING_URL || 'https://symbol-community.com').replace(/\/+$/, '');
 const TWITTER_SITE = process.env.TWITTER_SITE || '@faunsu19000';
 const THEME_COLOR = '#b32af9';
+const MAX_URLS_PER_SITEMAP = 45000;
 
 const LOCALES = ['en', 'ja', 'ko', 'zh', 'zh-hant-tw'] as const;
 const CATEGORIES = ['news', 'community', 'docs'] as const;
 
 type Locale = (typeof LOCALES)[number];
 type Category = (typeof CATEGORIES)[number];
+type AlternatePathMap = Partial<Record<Locale, string>>;
 
 type I18n = Record<string, unknown>;
 
@@ -44,6 +46,11 @@ interface StaticPage {
   title: string;
   description: string;
   body: string;
+}
+
+interface SitemapEntry {
+  path: string;
+  lastModified?: string;
 }
 
 interface Space {
@@ -248,6 +255,10 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
+function escapeXml(value: string): string {
+  return escapeHtml(value);
+}
+
 function stripMarkdown(markdown: string): string {
   return markdown
     .replace(/```[\s\S]*?```/g, ' ')
@@ -273,6 +284,11 @@ function toSiteUrl(pathFromRoot: string): string {
   const normalized = pathFromRoot.replace(/^\/+/, '');
   if (!normalized) return `${SITE_URL}/`;
   return `${SITE_URL}/${normalized}`;
+}
+
+function toRootRelativePath(pathFromRoot: string): string {
+  const normalized = pathFromRoot.replace(/^\/+/, '');
+  return normalized ? `/${normalized}` : '/';
 }
 
 function toAbsoluteAssetUrl(assetPath: string, depth: number): string {
@@ -309,6 +325,30 @@ function renderMetaTags(options: MetaOptions): string {
   <meta name="twitter:title" content="${escapeHtml(options.title)}" />
   <meta name="twitter:description" content="${escapeHtml(options.description)}" />
   <meta name="twitter:image" content="${escapeHtml(absoluteImage)}" />`;
+}
+
+function hreflang(locale: Locale): string {
+  const map: Record<Locale, string> = {
+    en: 'en',
+    ja: 'ja',
+    ko: 'ko',
+    zh: 'zh-CN',
+    'zh-hant-tw': 'zh-TW',
+  };
+
+  return map[locale];
+}
+
+function renderLinkRelationTags(pagePath: string, alternatePaths: AlternatePathMap = {}): string {
+  const lines = [`<link rel="canonical" href="${escapeHtml(toSiteUrl(pagePath))}" />`];
+  const alternates = Object.entries(alternatePaths) as [Locale, string][];
+
+  for (const [locale, path] of alternates) {
+    lines.push(`<link rel="alternate" hreflang="${escapeHtml(hreflang(locale))}" href="${escapeHtml(toSiteUrl(path))}" />`);
+  }
+
+  lines.push(`<link rel="alternate" hreflang="x-default" href="${escapeHtml(toSiteUrl(alternatePaths.en || pagePath))}" />`);
+  return lines.join('\n  ');
 }
 
 function renderPwaHeadTags(depth: number): string {
@@ -446,13 +486,201 @@ function renderArticleShareScript(): string {
 
 function localeIndexPath(locale: Locale, depth: number): string {
   const root = getRootPath(depth);
-  return locale === 'en' ? `${root}index.html` : `${root}${locale}/index.html`;
+  return locale === 'en' ? root : `${root}${locale}/`;
 }
 
 function localeScopedPath(locale: Locale, depth: number, relativePath: string): string {
   const root = getRootPath(depth);
   const normalized = relativePath.replace(/^\/+/, '');
   return locale === 'en' ? `${root}${normalized}` : `${root}${locale}/${normalized}`;
+}
+
+function homePagePath(locale: Locale): string {
+  return locale === 'en' ? '' : `${locale}/`;
+}
+
+function categoryPagePath(locale: Locale, category: Category): string {
+  return locale === 'en' ? `${category}/` : `${locale}/${category}/`;
+}
+
+function articlePagePath(locale: Locale, category: Category, slug: string): string {
+  const encodedSlug = encodeURIComponent(slug);
+  return locale === 'en'
+    ? `${category}/${encodedSlug}.html`
+    : `${locale}/${category}/${encodedSlug}.html`;
+}
+
+function staticPagePath(locale: Locale, slug: string): string {
+  return locale === 'en' ? `${slug}/` : `${locale}/${slug}/`;
+}
+
+function parseIsoDate(value?: string): string | undefined {
+  if (!value) return undefined;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return undefined;
+  }
+
+  return date.toISOString();
+}
+
+function resolveArticleLastModified(article: Article): string | undefined {
+  return parseIsoDate(article.updatedAt) || parseIsoDate(article.publishedAt) || parseIsoDate(article.createdAt);
+}
+
+function resolveLatestArticleLastModified(articles: Article[]): string | undefined {
+  let latestTime = 0;
+
+  for (const article of articles) {
+    const lastModified = resolveArticleLastModified(article);
+    if (!lastModified) continue;
+
+    const time = new Date(lastModified).getTime();
+    if (time > latestTime) {
+      latestTime = time;
+    }
+  }
+
+  return latestTime > 0 ? new Date(latestTime).toISOString() : undefined;
+}
+
+function collectAlternatePaths(resolver: (locale: Locale) => string | undefined): AlternatePathMap {
+  const paths: AlternatePathMap = {};
+
+  for (const locale of LOCALES) {
+    const path = resolver(locale);
+    if (path !== undefined) {
+      paths[locale] = path;
+    }
+  }
+
+  return paths;
+}
+
+function articleFilePath(locale: Locale, category: Category, slug: string): string {
+  return path.join(CONTENT_DIR, locale, category, `${slug}.md`);
+}
+
+function hasArticle(locale: Locale, category: Category, slug: string): boolean {
+  return fs.existsSync(articleFilePath(locale, category, slug));
+}
+
+function staticPageFilePath(locale: Locale, slug: string): string {
+  return path.join(CONTENT_DIR, locale, 'pages', `${slug}.md`);
+}
+
+function hasStaticPage(locale: Locale, slug: string): boolean {
+  return fs.existsSync(staticPageFilePath(locale, slug));
+}
+
+function chunkEntries<T>(entries: T[], chunkSize: number): T[][] {
+  if (entries.length === 0) return [[]];
+
+  const chunks: T[][] = [];
+  for (let index = 0; index < entries.length; index += chunkSize) {
+    chunks.push(entries.slice(index, index + chunkSize));
+  }
+
+  return chunks;
+}
+
+function renderSitemapUrlSet(entries: SitemapEntry[]): string {
+  const urls = entries
+    .map((entry) => {
+      const lines = [
+        '  <url>',
+        `    <loc>${escapeXml(toSiteUrl(entry.path))}</loc>`,
+      ];
+
+      if (entry.lastModified) {
+        lines.push(`    <lastmod>${escapeXml(entry.lastModified)}</lastmod>`);
+      }
+
+      lines.push('  </url>');
+      return lines.join('\n');
+    })
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+}
+
+function renderSitemapIndex(fileNames: string[]): string {
+  const items = fileNames
+    .map((fileName) => `  <sitemap>\n    <loc>${escapeXml(toSiteUrl(fileName))}</loc>\n  </sitemap>`)
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${items}\n</sitemapindex>\n`;
+}
+
+function collectSitemapEntries(): SitemapEntry[] {
+  const entries: SitemapEntry[] = [];
+
+  for (const locale of LOCALES) {
+    const news = loadArticles(locale, 'news');
+    const community = loadArticles(locale, 'community');
+    const docs = loadArticles(locale, 'docs');
+    const allArticles = [...news, ...community, ...docs];
+    const aboutPage = loadStaticPage(locale, 'about', false);
+
+    entries.push({
+      path: homePagePath(locale),
+      lastModified: resolveLatestArticleLastModified(allArticles),
+    });
+
+    if (aboutPage) {
+      entries.push({
+        path: staticPagePath(locale, aboutPage.slug),
+      });
+    }
+
+    const categoryMap: Record<Category, Article[]> = {
+      news,
+      community,
+      docs,
+    };
+
+    for (const category of CATEGORIES) {
+      const articles = categoryMap[category];
+
+      entries.push({
+        path: categoryPagePath(locale, category),
+        lastModified: resolveLatestArticleLastModified(articles),
+      });
+
+      for (const article of articles) {
+        entries.push({
+          path: articlePagePath(locale, category, article.slug),
+          lastModified: resolveArticleLastModified(article),
+        });
+      }
+    }
+  }
+
+  return entries;
+}
+
+function writeSitemapFiles(): void {
+  const entries = collectSitemapEntries();
+  const sitemapChunks = chunkEntries(entries, MAX_URLS_PER_SITEMAP);
+
+  if (sitemapChunks.length === 1) {
+    fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), renderSitemapUrlSet(sitemapChunks[0]));
+    return;
+  }
+
+  const fileNames = sitemapChunks.map((chunk, index) => {
+    const fileName = `sitemap-${index + 1}.xml`;
+    fs.writeFileSync(path.join(DIST_DIR, fileName), renderSitemapUrlSet(chunk));
+    return fileName;
+  });
+
+  fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), renderSitemapIndex(fileNames));
+}
+
+function writeRobotsFile(): void {
+  const content = `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`;
+  fs.writeFileSync(path.join(DIST_DIR, 'robots.txt'), content);
 }
 
 function formatDate(dateString: string, locale: Locale): string {
@@ -707,10 +935,10 @@ function loadArticles(locale: Locale, category: Category): Article[] {
   });
 }
 
-function loadStaticPage(locale: Locale, slug: string): StaticPage | undefined {
+function loadStaticPage(locale: Locale, slug: string, fallbackToJa: boolean = true): StaticPage | undefined {
   const candidates: Locale[] = [locale];
 
-  if (locale !== 'ja') {
+  if (fallbackToJa && locale !== 'ja') {
     candidates.push('ja');
   }
 
@@ -869,13 +1097,22 @@ function renderCopySuccessIcon(): string {
   return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4 4L19 7"></path></svg>';
 }
 
-function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: Article[], docs: Article[], spaces: Space[]): string {
+function renderHomePage(
+  locale: Locale,
+  i18n: I18n,
+  news: Article[],
+  community: Article[],
+  docs: Article[],
+  spaces: Space[],
+  hasAboutPage: boolean
+): string {
   const ui = UI_TEXT[locale];
   const root = getRootPath(locale === 'en' ? 0 : 1);
   const depth = locale === 'en' ? 0 : 1;
   const docsTitle = text(i18n, 'docs_title', 'Docs');
   const pageTitle = text(i18n, 'meta_page_title', 'Symbol Community');
-  const pagePath = locale === 'en' ? '' : `${locale}/`;
+  const pagePath = homePagePath(locale);
+  const alternatePaths = collectAlternatePaths((candidateLocale) => homePagePath(candidateLocale));
 
   const featureCards = [
     {
@@ -1016,6 +1253,7 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
     pagePath,
     type: 'website',
   })}
+  ${renderLinkRelationTags(pagePath, alternatePaths)}
   <link href="${root}css/output.css" rel="stylesheet" />
 </head>
 <body>
@@ -1118,9 +1356,11 @@ function renderHomePage(locale: Locale, i18n: I18n, news: Article[], community: 
       <div class="container">
         <h2 class="section-title">${escapeHtml(text(i18n, 'about_title', 'About this project'))}</h2>
         <p class="section-description">${escapeHtml(text(i18n, 'about_body', 'This website is maintained by community contributors.'))}</p>
-        <p style="margin-top:1rem;">
-          <a class="inline-link" href="${localeScopedPath(locale, depth, 'about/index.html')}">${escapeHtml(text(i18n, 'about_page_link_text', 'Learn more about the team'))}</a>
-        </p>
+        ${hasAboutPage
+          ? `<p style="margin-top:1rem;">
+          <a class="inline-link" href="${localeScopedPath(locale, depth, 'about/')}">${escapeHtml(text(i18n, 'about_page_link_text', 'Learn more about the team'))}</a>
+        </p>`
+          : ''}
         <p style="margin-top:1rem;">
           <a class="inline-link" href="https://github.com/symbol-blockchain-community/symbol-web" target="_blank" rel="noopener">${ui.editOnGitHub}</a>
         </p>
@@ -1151,7 +1391,8 @@ function renderCategoryPage(locale: Locale, i18n: I18n, category: Category, arti
     .join('');
   const pageTitle = `${categoryTitleMap[category]} | ${text(i18n, 'meta_page_title', 'Symbol Community')}`;
   const pageDescription = text(i18n, 'meta_page_description', 'Community updates and references.');
-  const pagePath = locale === 'en' ? `${category}/` : `${locale}/${category}/`;
+  const pagePath = categoryPagePath(locale, category);
+  const alternatePaths = collectAlternatePaths((candidateLocale) => categoryPagePath(candidateLocale, category));
 
   return `<!DOCTYPE html>
 <html lang="${locale}">
@@ -1167,6 +1408,7 @@ function renderCategoryPage(locale: Locale, i18n: I18n, category: Category, arti
     pagePath,
     type: 'website',
   })}
+  ${renderLinkRelationTags(pagePath, alternatePaths)}
   <link href="${root}css/output.css" rel="stylesheet" />
 </head>
 <body>
@@ -1207,9 +1449,10 @@ function renderArticlePage(locale: Locale, i18n: I18n, category: Category, artic
 
   const articleDate = formatDate(article.publishedAt, locale);
   const pageTitle = `${article.title} | ${text(i18n, 'meta_page_title', 'Symbol Community')}`;
-  const pagePath = locale === 'en'
-    ? `${category}/${encodeURIComponent(article.slug)}.html`
-    : `${locale}/${category}/${encodeURIComponent(article.slug)}.html`;
+  const pagePath = articlePagePath(locale, category, article.slug);
+  const alternatePaths = collectAlternatePaths((candidateLocale) =>
+    hasArticle(candidateLocale, category, article.slug) ? articlePagePath(candidateLocale, category, article.slug) : undefined
+  );
 
   return `<!DOCTYPE html>
 <html lang="${locale}">
@@ -1226,13 +1469,14 @@ function renderArticlePage(locale: Locale, i18n: I18n, category: Category, artic
     type: 'article',
     imagePath: cover,
   })}
+  ${renderLinkRelationTags(pagePath, alternatePaths)}
   <link href="${root}css/output.css" rel="stylesheet" />
 </head>
 <body>
   ${renderHeader(locale, i18n, depth)}
   <main class="article-shell">
     <div class="container article-layout">
-      <a class="back-link" href="${localeScopedPath(locale, depth, `${category}/index.html`)}">← ${ui.back}</a>
+      <a class="back-link" href="${localeScopedPath(locale, depth, `${category}/`)}">← ${ui.back}</a>
       <div class="article-header-card reveal">
         ${cover ? `<img class="article-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(article.title)}" loading="lazy" decoding="async" />` : ''}
         <div class="article-header">
@@ -1261,6 +1505,10 @@ function renderStaticPage(locale: Locale, i18n: I18n, page: StaticPage): string 
   const bodyHtml = renderMarkdown(page.body, depth);
   const pageTitle = text(i18n, 'about_page_meta_title', `${page.title} | ${text(i18n, 'meta_page_title', 'Symbol Community')}`);
   const pageDescription = text(i18n, 'about_page_meta_description', page.description);
+  const pagePath = staticPagePath(locale, page.slug);
+  const alternatePaths = collectAlternatePaths((candidateLocale) =>
+    hasStaticPage(candidateLocale, page.slug) ? staticPagePath(candidateLocale, page.slug) : undefined
+  );
 
   return `<!DOCTYPE html>
 <html lang="${locale}">
@@ -1272,8 +1520,9 @@ function renderStaticPage(locale: Locale, i18n: I18n, page: StaticPage): string 
     depth,
     title: pageTitle,
     description: pageDescription,
-    pagePath: locale === 'en' ? 'about/index.html' : `${locale}/about/index.html`,
+    pagePath,
   })}
+  ${renderLinkRelationTags(pagePath, alternatePaths)}
   ${renderPwaHeadTags(depth)}
   <link rel="stylesheet" href="${root}css/output.css" />
 </head>
@@ -1300,18 +1549,73 @@ function renderStaticPage(locale: Locale, i18n: I18n, page: StaticPage): string 
 </html>`;
 }
 
+function renderRedirectPage(targetPath: string): string {
+  const absoluteTarget = toSiteUrl(targetPath);
+  const rootRelativeTarget = toRootRelativePath(targetPath);
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redirecting…</title>
+  <meta name="robots" content="noindex,follow" />
+  <meta http-equiv="refresh" content="0; url=${escapeHtml(rootRelativeTarget)}" />
+  <link rel="canonical" href="${escapeHtml(absoluteTarget)}" />
+</head>
+<body>
+  <p>Redirecting to <a href="${escapeHtml(rootRelativeTarget)}">${escapeHtml(absoluteTarget)}</a>.</p>
+</body>
+</html>`;
+}
+
+function writeRedirectPage(dirPath: string, targetPath: string): void {
+  ensureDirectory(dirPath);
+  fs.writeFileSync(path.join(dirPath, 'index.html'), renderRedirectPage(targetPath));
+}
+
+function writeLegacyExtensionlessRedirects(
+  locale: Locale,
+  outputDir: string,
+  categoryMap: Record<Category, Article[]>,
+  aboutPage?: StaticPage
+): void {
+  for (const category of CATEGORIES) {
+    for (const article of categoryMap[category]) {
+      writeRedirectPage(path.join(outputDir, category, article.slug), articlePagePath(locale, category, article.slug));
+    }
+  }
+
+  if (locale === 'en') {
+    const legacyEnglishDir = path.join(DIST_DIR, 'en');
+    writeRedirectPage(legacyEnglishDir, homePagePath('en'));
+
+    if (aboutPage) {
+      writeRedirectPage(path.join(legacyEnglishDir, aboutPage.slug), staticPagePath('en', aboutPage.slug));
+    }
+
+    for (const category of CATEGORIES) {
+      writeRedirectPage(path.join(legacyEnglishDir, category), categoryPagePath('en', category));
+
+      for (const article of categoryMap[category]) {
+        writeRedirectPage(path.join(legacyEnglishDir, category, article.slug), articlePagePath('en', category, article.slug));
+      }
+    }
+  }
+}
+
 function buildLocale(locale: Locale): void {
   const i18n = loadI18n(locale);
   const news = loadArticles(locale, 'news');
   const community = loadArticles(locale, 'community');
   const docs = loadArticles(locale, 'docs');
-  const aboutPage = loadStaticPage(locale, 'about');
+  const aboutPage = loadStaticPage(locale, 'about', false);
   const spaces = loadSpaces(locale);
 
   const outputDir = locale === 'en' ? DIST_DIR : path.join(DIST_DIR, locale);
   ensureDirectory(outputDir);
 
-  const homeHtml = renderHomePage(locale, i18n, news, community, docs, spaces);
+  const homeHtml = renderHomePage(locale, i18n, news, community, docs, spaces, Boolean(aboutPage));
   fs.writeFileSync(path.join(outputDir, 'index.html'), homeHtml);
 
   if (aboutPage) {
@@ -1339,6 +1643,8 @@ function buildLocale(locale: Locale): void {
       fs.writeFileSync(path.join(categoryDir, `${article.slug}.html`), articleHtml);
     }
   }
+
+  writeLegacyExtensionlessRedirects(locale, outputDir, categoryMap, aboutPage);
 }
 
 function buildSite(): void {
@@ -1375,6 +1681,9 @@ function buildSite(): void {
     console.log(` - ${locale}`);
     buildLocale(locale);
   }
+
+  writeSitemapFiles();
+  writeRobotsFile();
 
   console.log('Build complete.');
 }
