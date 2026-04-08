@@ -48,12 +48,17 @@ function normalizeReference(reference: string): string {
 function resolveReference(htmlFile: string, reference: string): string {
   const normalized = normalizeReference(reference);
 
-  if (normalized.endsWith('/')) {
-    return path.join(path.dirname(htmlFile), normalized, 'index.html');
+  if (normalized.startsWith('/')) {
+    const fromRoot = normalized.slice(1);
+    if (normalized.endsWith('/')) {
+      return path.join(DIST_DIR, fromRoot, 'index.html');
+    }
+
+    return path.join(DIST_DIR, fromRoot);
   }
 
-  if (normalized.startsWith('/')) {
-    return path.join(DIST_DIR, normalized.slice(1));
+  if (normalized.endsWith('/')) {
+    return path.join(path.dirname(htmlFile), normalized, 'index.html');
   }
 
   return path.join(path.dirname(htmlFile), normalized);
