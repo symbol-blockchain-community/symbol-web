@@ -14,6 +14,7 @@ const IMAGES_SOURCE = path.join(CONTENT_DIR, 'images');
 const SITE_URL = (process.env.SITE_URL || process.env.NEXT_PUBLIC_HOSTING_URL || 'https://symbol-community.com').replace(/\/+$/, '');
 const TWITTER_SITE = process.env.TWITTER_SITE || '@faunsu19000';
 const THEME_COLOR = '#b32af9';
+const ADSENSE_CLIENT = 'ca-pub-4835092005162323';
 const MAX_URLS_PER_SITEMAP = 45000;
 
 const LOCALES = ['en', 'ja', 'ko', 'zh', 'zh-hant-tw'] as const;
@@ -357,6 +358,10 @@ function renderPwaHeadTags(depth: number): string {
   <link rel="apple-touch-icon" href="${root}maskable_icon_x192.png" />
   <link rel="manifest" href="${root}manifest.webmanifest" />
   <link rel="shortcut icon" href="${root}favicon.ico" />`;
+}
+
+function renderAdsenseScriptTag(): string {
+  return `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}" crossorigin="anonymous"></script>`;
 }
 
 function renderLegacySwCleanupScript(): string {
@@ -1255,6 +1260,7 @@ function renderHomePage(
   })}
   ${renderLinkRelationTags(pagePath, alternatePaths)}
   <link href="${root}css/output.css" rel="stylesheet" />
+  ${renderAdsenseScriptTag()}
 </head>
 <body>
   ${renderHeader(locale, i18n, depth)}
@@ -1410,6 +1416,7 @@ function renderCategoryPage(locale: Locale, i18n: I18n, category: Category, arti
   })}
   ${renderLinkRelationTags(pagePath, alternatePaths)}
   <link href="${root}css/output.css" rel="stylesheet" />
+  ${renderAdsenseScriptTag()}
 </head>
 <body>
   ${renderHeader(locale, i18n, depth)}
@@ -1471,6 +1478,7 @@ function renderArticlePage(locale: Locale, i18n: I18n, category: Category, artic
   })}
   ${renderLinkRelationTags(pagePath, alternatePaths)}
   <link href="${root}css/output.css" rel="stylesheet" />
+  ${renderAdsenseScriptTag()}
 </head>
 <body>
   ${renderHeader(locale, i18n, depth)}
@@ -1525,6 +1533,7 @@ function renderStaticPage(locale: Locale, i18n: I18n, page: StaticPage): string 
   ${renderLinkRelationTags(pagePath, alternatePaths)}
   ${renderPwaHeadTags(depth)}
   <link rel="stylesheet" href="${root}css/output.css" />
+  ${renderAdsenseScriptTag()}
 </head>
 <body>
   ${renderHeader(locale, i18n, depth)}
@@ -1562,6 +1571,7 @@ function renderRedirectPage(targetPath: string): string {
   <meta name="robots" content="noindex,follow" />
   <meta http-equiv="refresh" content="0; url=${escapeHtml(rootRelativeTarget)}" />
   <link rel="canonical" href="${escapeHtml(absoluteTarget)}" />
+  ${renderAdsenseScriptTag()}
 </head>
 <body>
   <p>Redirecting to <a href="${escapeHtml(rootRelativeTarget)}">${escapeHtml(absoluteTarget)}</a>.</p>
