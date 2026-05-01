@@ -4,7 +4,7 @@ This directory contains the complete website implementation used for GitHub Page
 
 ## Requirements
 
-- Node.js 20+
+- Node.js 24+
 - npm
 
 ## Commands

@@ -10,6 +10,8 @@ npm --prefix static-site run test
 npm --prefix static-site run preview
 ```
 
+Static site development and CI now target **Node.js 24+**.
+
 ## Content Editing
 
 Articles are managed as Markdown files:

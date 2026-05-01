@@ -3,6 +3,9 @@
   "version": "2.0.0",
   "private": true,
   "type": "commonjs",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "build:css": "npx tailwindcss -i ./src/input.css -o ./css/output.css --minify",
     "build:site": "npx ts-node scripts/build-site.ts",
