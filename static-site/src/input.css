@@ -602,6 +602,24 @@ img {
   letter-spacing: -0.01em;
 }
 
+.article-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.article-markdown-link {
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface-strong));
+  border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
+  color: var(--primary-strong);
+  box-shadow: 0 12px 26px -18px rgba(125, 184, 255, 0.45);
+}
+
+.article-markdown-link:hover {
+  box-shadow: 0 16px 30px -20px rgba(125, 184, 255, 0.52);
+}
+
 .article-meta {
   color: var(--muted);
   font-size: 0.9rem;

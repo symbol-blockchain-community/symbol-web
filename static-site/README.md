@@ -44,6 +44,13 @@ localizations: []
 Body in Markdown.
 ```
 
+## Generated Article Endpoints
+
+- Article pages are generated as `/<category>/<slug>.html` and `/<locale>/<category>/<slug>.html`.
+- Each article also emits a machine-readable Markdown mirror at `.../<slug>.html.md`.
+- Article HTML pages include a visible Markdown button and a `<link rel="alternate" type="text/markdown">` reference to the mirror endpoint.
+- On GitHub Pages, the exact `Content-Type` for `.md` files follows the hosting platform defaults.
+
 ## Editing Flow on GitHub
 
 1. Create a branch.

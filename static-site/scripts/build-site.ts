@@ -85,6 +85,7 @@ interface UiText {
   shareOnX: string;
   shareOnFacebook: string;
   shareOnLinkedIn: string;
+  openMarkdown: string;
 }
 
 interface MetaOptions {
@@ -119,6 +120,7 @@ const UI_TEXT: Record<Locale, UiText> = {
     shareOnX: 'X',
     shareOnFacebook: 'Facebook',
     shareOnLinkedIn: 'LinkedIn',
+    openMarkdown: 'Open Markdown',
   },
   ja: {
     menu: 'メニュー',
@@ -142,6 +144,7 @@ const UI_TEXT: Record<Locale, UiText> = {
     shareOnX: 'X',
     shareOnFacebook: 'Facebook',
     shareOnLinkedIn: 'LinkedIn',
+    openMarkdown: 'Markdown を開く',
   },
   ko: {
     menu: '메뉴',
@@ -165,6 +168,7 @@ const UI_TEXT: Record<Locale, UiText> = {
     shareOnX: 'X',
     shareOnFacebook: 'Facebook',
     shareOnLinkedIn: 'LinkedIn',
+    openMarkdown: 'Markdown 열기',
   },
   zh: {
     menu: '菜单',
@@ -188,6 +192,7 @@ const UI_TEXT: Record<Locale, UiText> = {
     shareOnX: 'X',
     shareOnFacebook: 'Facebook',
     shareOnLinkedIn: 'LinkedIn',
+    openMarkdown: '打开 Markdown',
   },
   'zh-hant-tw': {
     menu: '選單',
@@ -211,6 +216,7 @@ const UI_TEXT: Record<Locale, UiText> = {
     shareOnX: 'X',
     shareOnFacebook: 'Facebook',
     shareOnLinkedIn: 'LinkedIn',
+    openMarkdown: '開啟 Markdown',
   },
 };
 
@@ -350,6 +356,10 @@ function renderLinkRelationTags(pagePath: string, alternatePaths: AlternatePathM
 
   lines.push(`<link rel="alternate" hreflang="x-default" href="${escapeHtml(toSiteUrl(alternatePaths.en || pagePath))}" />`);
   return lines.join('\n  ');
+}
+
+function renderMarkdownAlternateLink(pagePath: string): string {
+  return `<link rel="alternate" type="text/markdown" href="${escapeHtml(toSiteUrl(pagePath))}" />`;
 }
 
 function renderPwaHeadTags(depth: number): string {
@@ -513,6 +523,10 @@ function articlePagePath(locale: Locale, category: Category, slug: string): stri
   return locale === 'en'
     ? `${category}/${encodedSlug}.html`
     : `${locale}/${category}/${encodedSlug}.html`;
+}
+
+function articleMarkdownPagePath(locale: Locale, category: Category, slug: string): string {
+  return `${articlePagePath(locale, category, slug)}.md`;
 }
 
 function staticPagePath(locale: Locale, slug: string): string {
@@ -1083,6 +1097,11 @@ function renderArticleShareCard(ui: UiText, articleTitle: string): string {
       </section>`;
 }
 
+function renderDistributedMarkdown(markdown: string): string {
+  const trimmed = markdown.trim();
+  return trimmed ? `${trimmed}\n` : '';
+}
+
 function renderShareIcon(network: 'x' | 'facebook' | 'linkedin' | 'copy'): string {
   const icons = {
     x: '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817-5.966 6.817H1.68l7.73-8.835L1.255 2.25h6.827l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117Z"/></svg>',
@@ -1457,6 +1476,8 @@ function renderArticlePage(locale: Locale, i18n: I18n, category: Category, artic
   const articleDate = formatDate(article.publishedAt, locale);
   const pageTitle = `${article.title} | ${text(i18n, 'meta_page_title', 'Symbol Community')}`;
   const pagePath = articlePagePath(locale, category, article.slug);
+  const markdownPagePath = articleMarkdownPagePath(locale, category, article.slug);
+  const markdownHref = toRootRelativePath(markdownPagePath);
   const alternatePaths = collectAlternatePaths((candidateLocale) =>
     hasArticle(candidateLocale, category, article.slug) ? articlePagePath(candidateLocale, category, article.slug) : undefined
   );
@@ -1477,6 +1498,7 @@ function renderArticlePage(locale: Locale, i18n: I18n, category: Category, artic
     imagePath: cover,
   })}
   ${renderLinkRelationTags(pagePath, alternatePaths)}
+  ${renderMarkdownAlternateLink(markdownPagePath)}
   <link href="${root}css/output.css" rel="stylesheet" />
   ${renderAdsenseScriptTag()}
 </head>
@@ -1491,6 +1513,9 @@ function renderArticlePage(locale: Locale, i18n: I18n, category: Category, artic
           <div class="article-meta">${escapeHtml(categoryTitleMap[category])}${articleDate ? ` · ${escapeHtml(articleDate)}` : ''}</div>
           <h1>${escapeHtml(article.title)}</h1>
           <p class="page-description">${escapeHtml(article.description)}</p>
+          <div class="article-header-actions">
+            <a class="btn article-markdown-link" href="${escapeHtml(markdownHref)}">${escapeHtml(ui.openMarkdown)}</a>
+          </div>
         </div>
       </div>
       ${renderArticleShareCard(ui, article.title)}
@@ -1651,6 +1676,7 @@ function buildLocale(locale: Locale): void {
     for (const article of categoryMap[category]) {
       const articleHtml = renderArticlePage(locale, i18n, category, article);
       fs.writeFileSync(path.join(categoryDir, `${article.slug}.html`), articleHtml);
+      fs.writeFileSync(path.join(categoryDir, `${article.slug}.html.md`), renderDistributedMarkdown(article.body));
     }
   }
 
