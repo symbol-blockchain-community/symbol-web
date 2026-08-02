@@ -646,7 +646,7 @@ img {
 
 .article-share-actions {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 0.55rem;
   margin-top: 0.6rem;
   align-items: center;
@@ -976,7 +976,6 @@ img {
 
   .article-share-actions {
     gap: 0.5rem;
-    overflow-x: auto;
     padding-bottom: 0.1rem;
   }
 }
